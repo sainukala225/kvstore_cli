@@ -1,4 +1,4 @@
-#include "../include/kvstore.h"
+#include "kvstore.h"
 #include <stdlib.h>
 int main() {
   Kvstore store = kvstore_create();

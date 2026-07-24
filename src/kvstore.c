@@ -1,4 +1,4 @@
-#include "../include/kvstore.h"
+#include "kvstore.h"
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>

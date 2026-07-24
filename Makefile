@@ -1,7 +1,7 @@
 .SILENT :
 
 CC = clang
-CFLAGS = -Wall -Wextra -pthread -std=c23 -g
+CFLAGS = -Wall -Wextra -pthread -std=c23 -g -Iinclude/
 TARGET = build/bin/kvstore
 OBJS = build/obj/kvstore.o \
 			 build/obj/kvstore_cli.o
