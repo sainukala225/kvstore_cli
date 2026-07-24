@@ -1,9 +1,10 @@
 .SILENT :
 
 CC = clang
-CFLAGS = -Wall -Wextra -pthread -std=c99
+CFLAGS = -Wall -Wextra -pthread -std=c23 -g
 TARGET = build/bin/kvstore
-OBJS = build/obj/kvstore.o
+OBJS = build/obj/kvstore.o \
+			 build/obj/kvstore_cli.o
 
 all : $(TARGET)
 	echo "build finished"

@@ -1,0 +1,19 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-Wall",
+      "-Wextra",
+      "-pthread",
+      "-std=c23",
+      "-g",
+      "-c",
+      "-o",
+      "build/obj/kvstore.o",
+      "src/kvstore.c"
+    ],
+    "directory": "/home/sainukala/ccapstone/kvstore",
+    "file": "/home/sainukala/ccapstone/kvstore/src/kvstore.c",
+    "output": "/home/sainukala/ccapstone/kvstore/build/obj/kvstore.o"
+  }
+]
