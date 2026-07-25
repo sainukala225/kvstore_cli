@@ -22,7 +22,7 @@ static int CCHAR_POS_ON_LINE;
  *                      forward declarations                         *
  *********************************************************************/
 
-static void read_line();
+static int read_line();
 static void read_word(char word[]);
 static void conv_str_to_lowcase(char string[]);
 static void print_help_message();
@@ -49,7 +49,10 @@ int main() {
     printf("enter the command : ");
 
     // read the whole line
-    read_line();
+    if (!read_line()) {
+      printf("reached EOF. exiting program\n");
+      return EXIT_SUCCESS;
+    }
 
     // read just the command and convert it to lower case
     read_word(cmd);
@@ -109,7 +112,7 @@ int main() {
 
     // command with two arguments
     else if (!strcmp(cmd, "put")) {
-      char extra_arg[MAX_WORD_SIZE];
+      char extra_arg[MAX_WORD_SIZE + 1];
       read_word(extra_arg);
       if (!key[0]) {
         printf("Error: 'put' requires key argument. Type 'help' for usage.\n");
@@ -169,14 +172,15 @@ static void print_help_message() {
  *                      Helper Funtions                              *
  *********************************************************************/
 
-static void read_line() {
-  char ch;
+static int read_line() {
+  int ch; // have char as int so comparison with EOF works
   int i = 0;
   CCHAR_POS_ON_LINE = 0;
-  while (i < MAX_LINE_SIZE && (ch = getchar()) != '\n') {
+  while (i < MAX_LINE_SIZE && (ch = getchar()) != '\n' && ch != EOF) {
     line[i++] = ch;
   }
   line[i] = '\0';
+  return ch == EOF ? 0 : 1;
 }
 
 static void read_word(char word[]) {
@@ -195,6 +199,11 @@ static void read_word(char word[]) {
       break;
     }
     ccounter_in_line++;
+  }
+
+  if (ch == '\0') {
+    word[0] = '\0';
+    return;
   }
 
   char word_end;
@@ -233,7 +242,7 @@ static void read_word(char word[]) {
 }
 
 static void conv_str_to_lowcase(char string[]) {
-  for (unsigned int i = 0; i < strlen(string); i++) {
-    string[i] = tolower(string[i]);
+  for (unsigned int i = 0, len = strlen(string); i < len; i++) {
+    string[i] = tolower((unsigned char)string[i]);
   }
 }

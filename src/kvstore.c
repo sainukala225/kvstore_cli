@@ -121,6 +121,11 @@ void kvstore_stats(Kvstore store) {
 
 bool put_key(Kvstore store, const char *key, const char *value) {
 
+  if (store == NULL) {
+    printf("Error : kvstore can't be null\n");
+    return false;
+  }
+
   node *existing_item = get_key(store, key);
   if (existing_item != NULL) {
 
@@ -344,7 +349,7 @@ static void *set_key_value(node *item, const char *value) {
 static int hash(const char *key) {
   unsigned long hash_value = 5381;
   for (const char *c = key; *c != '\0'; c++) {
-    hash_value = ((hash_value << 5) + hash_value) + *c;
+    hash_value = ((hash_value << 5) + hash_value) + ((unsigned char)*c);
   }
   return hash_value % BUCKET_SIZE;
 }
