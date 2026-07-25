@@ -54,6 +54,7 @@ Kvstore kvstore_create() {
   Kvstore store = calloc(1, sizeof(kvstore_t));
   return store;
 }
+
 void kvstore_free(Kvstore store) {
   for (int i = 0; i < BUCKET_SIZE; i++) {
     node *curr = store->bucket[i], *next;
@@ -71,12 +72,40 @@ void kvstore_free(Kvstore store) {
   free(store);
 }
 
+void kvstore_clear(Kvstore store) {
+  for (int i = 0; i < BUCKET_SIZE; i++) {
+    node *curr = store->bucket[i], *next;
+    while (curr) {
+      free(curr->key);
+      if (curr->type == string) {
+        free(curr->value.str_value);
+      }
+      next = curr->next;
+      free(curr);
+      curr = next;
+    }
+    store->bucket[i] = NULL;
+  }
+
+  // Reset all the statistics to 0
+  store->total_items = 0;
+  store->occupied_buckets = 0;
+  store->int_items = 0;
+  store->double_items = 0;
+  store->str_items = 0;
+}
+
 void kvstore_stats(Kvstore store) {
+  double load_factor = (double)store->total_items / BUCKET_SIZE;
   printf("********************* stats of kvstore ***********************\n");
+  printf("* The bucket size (capacity)     : %3d                       *\n",
+         BUCKET_SIZE);
   printf("* The number of occupied_buckets : %3d                       *\n",
          store->occupied_buckets);
   printf("* The total items in the store   : %3d                       *\n",
          store->total_items);
+  printf("* The load factor                : %.2f                      *\n",
+         load_factor);
   printf("* The number of int items        : %3d                       *\n",
          store->int_items);
   printf("* The number of double items     : %3d                       *\n",
@@ -200,7 +229,7 @@ void print_key(Kvstore store, const char *key) {
   }
   node *item = get_key(store, key);
   if (!item) {
-    printf("Item doesn't exist");
+    printf("Item doesn't exist\n");
     return;
   }
   switch (item->type) {

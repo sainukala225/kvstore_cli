@@ -20,6 +20,9 @@ build/obj/%.o : src/%.c
 run : $(TARGET)
 	./$(TARGET)
 
+valgrind : $(TARGET)
+	valgrind --leak-check=yes --track-origins=yes $(TARGET)
+
 clean :
 	rm -rf build
 	echo "clean finished"
