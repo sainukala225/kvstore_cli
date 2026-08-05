@@ -353,7 +353,7 @@ int save_to_file(Kvstore store, char *filepath) {
 int load_from_file(Kvstore store, char *filepath) {
   CLEANUP(close_file) FILE *fileptr = fopen(filepath, "r");
   if (!fileptr) {
-    errorf("Error: Failed to open the file \n", filepath);
+    errorf("Error: Failed to open the file %s\n", filepath);
     return 1;
   }
   char cmd[MAX_WORD_SIZE + 1];
