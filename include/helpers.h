@@ -1,13 +1,15 @@
 #ifndef HELPER_H
 #define HELPER_H
+
+#include <stdio.h>
+
 /*********************************************************************
  *                             macros                                *
  *********************************************************************/
 
-#include <stdio.h>
 #define MAX_WORD_SIZE 100
 #define MAX_LINE_SIZE 1000
-
+#define CLEANUP(fn) __attribute__((cleanup(fn)))
 /*********************************************************************
  *                             enums                                 *
  *********************************************************************/
@@ -19,6 +21,7 @@ typedef enum {
 } read_line_status;
 
 void errorf(const char *format, ...);
+void close_file(void *fileptr);
 int read_line(FILE *stream);
 void read_word(char word[]);
 #endif

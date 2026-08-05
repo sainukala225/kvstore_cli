@@ -307,7 +307,7 @@ int delete_key(Kvstore store, const char *key) {
  *********************************************************************/
 
 int save_to_file(Kvstore store, char *filepath) {
-  FILE *fileptr = fopen(filepath, "w");
+  CLEANUP(close_file) FILE *fileptr = fopen(filepath, "w");
   if (!fileptr) {
     errorf("Error: Failed to create %s to save store\n", filepath);
     return 1;
@@ -324,7 +324,7 @@ int save_to_file(Kvstore store, char *filepath) {
                          curr->value.int_value);
         break;
       case Double:
-        status = fprintf(fileptr, "PUT '%s' '%f'\n", curr->key,
+        status = fprintf(fileptr, "PUT '%s' '%lf'\n", curr->key,
                          curr->value.double_value);
         break;
       case string:
@@ -347,12 +347,11 @@ int save_to_file(Kvstore store, char *filepath) {
       curr = curr->next;
     }
   }
-  fclose(fileptr);
   return 0;
 }
 
 int load_from_file(Kvstore store, char *filepath) {
-  FILE *fileptr = fopen(filepath, "r");
+  CLEANUP(close_file) FILE *fileptr = fopen(filepath, "r");
   if (!fileptr) {
     errorf("Error: Failed to open the file \n", filepath);
     return 1;
@@ -368,7 +367,7 @@ int load_from_file(Kvstore store, char *filepath) {
 
     switch (status) {
     case REACHED_EOF:
-      goto fileclose;
+      return 0;
     case READ_LINE_SUCCESS:
       break;
     case LINE_LIMIT_EXCEEDED:
@@ -383,8 +382,6 @@ int load_from_file(Kvstore store, char *filepath) {
     read_word(arg2); // get the arg2
     put_key(store, arg1, arg2);
   }
-fileclose:
-  fclose(fileptr);
   return 0;
 }
 /*********************************************************************

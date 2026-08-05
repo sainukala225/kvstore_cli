@@ -16,6 +16,7 @@ void errorf(const char *format, ...) {
   vfprintf(stderr, format, ap);
   va_end(ap);
 }
+void close_file(void *fileptr) { fclose(*(void **)fileptr); }
 
 int read_line(FILE *stream) {
   if (fgets(line, sizeof line, stream) == NULL)
@@ -25,7 +26,7 @@ int read_line(FILE *stream) {
     // Buffer filled before the line ended, so the rest is still queued.
     //   Drain it, or it becomes a bogus next command.
     int ch;
-    while ((ch = getchar()) != '\n' && ch != EOF)
+    while ((ch = fgetc(stream)) != '\n' && ch != EOF)
       ;
     return LINE_LIMIT_EXCEEDED;
   }
