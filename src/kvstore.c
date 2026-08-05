@@ -1,4 +1,5 @@
 #include "kvstore.h"
+#include "helpers.h"
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
@@ -122,7 +123,7 @@ void kvstore_stats(Kvstore store) {
 bool put_key(Kvstore store, const char *key, const char *value) {
 
   if (store == NULL) {
-    printf("Error : kvstore can't be null\n");
+    errorf("Error : kvstore can't be null\n");
     return false;
   }
 
@@ -301,6 +302,91 @@ int delete_key(Kvstore store, const char *key) {
   return 1;
 }
 
+/*********************************************************************
+ *                      File save/load Funtions                      *
+ *********************************************************************/
+
+int save_to_file(Kvstore store, char *filepath) {
+  FILE *fileptr = fopen(filepath, "w");
+  if (!fileptr) {
+    errorf("Error: Failed to create %s to save store\n", filepath);
+    return 1;
+  }
+  int status;
+  int dftries;
+
+  for (int i = 0; i < BUCKET_SIZE; i++) {
+    node *curr = store->bucket[i];
+    while (curr != NULL) {
+      switch (curr->type) {
+      case integer:
+        status = fprintf(fileptr, "PUT '%s' '%d'\n", curr->key,
+                         curr->value.int_value);
+        break;
+      case Double:
+        status = fprintf(fileptr, "PUT '%s' '%f'\n", curr->key,
+                         curr->value.double_value);
+        break;
+      case string:
+        status = fprintf(fileptr, "PUT '%s' '%s'\n", curr->key,
+                         curr->value.str_value);
+        break;
+      }
+      if (status < 0) {
+        errorf("Error: Failed when writing to file\n ");
+        for (dftries = 1; dftries <= 10; dftries++) {
+          if (!remove(filepath)) {
+            break;
+          }
+        }
+        if (dftries > 10) {
+          errorf("Error: Failed to delete the file %s", filepath);
+          return 1;
+        }
+      }
+      curr = curr->next;
+    }
+  }
+  fclose(fileptr);
+  return 0;
+}
+
+int load_from_file(Kvstore store, char *filepath) {
+  FILE *fileptr = fopen(filepath, "r");
+  if (!fileptr) {
+    errorf("Error: Failed to open the file \n", filepath);
+    return 1;
+  }
+  char cmd[MAX_WORD_SIZE + 1];
+  char arg1[MAX_WORD_SIZE + 1];
+  char arg2[MAX_WORD_SIZE + 1];
+
+  int line_count = 0;
+  while (true) {
+    line_count++;
+    read_line_status status = read_line(fileptr);
+
+    switch (status) {
+    case REACHED_EOF:
+      goto fileclose;
+    case READ_LINE_SUCCESS:
+      break;
+    case LINE_LIMIT_EXCEEDED:
+      errorf("Error : The command size on line %d should be under %d\n",
+             line_count, MAX_LINE_SIZE);
+      continue;
+    }
+
+    // read the command and ignore it
+    read_word(cmd);
+    read_word(arg1); // get the arg1
+    read_word(arg2); // get the arg2
+    put_key(store, arg1, arg2);
+  }
+fileclose:
+  fclose(fileptr);
+  return 0;
+}
 /*********************************************************************
  *                      Helper Funtions                              *
  *********************************************************************/

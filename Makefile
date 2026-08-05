@@ -1,10 +1,10 @@
 .SILENT :
 
-CC = clang
+CC = gcc
 CFLAGS = -Wall -Wextra -pthread -std=c23 -g -Iinclude/
 TARGET = build/bin/kvstore
-OBJS = build/obj/kvstore.o \
-			 build/obj/kvstore_cli.o
+SRCS := $(wildcard src/*.c)
+OBJS := $(patsubst src/%.c,build/obj/%.o,$(SRCS))
 
 all : $(TARGET)
 	echo "build finished"

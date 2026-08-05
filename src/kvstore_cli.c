@@ -1,3 +1,4 @@
+#include "helpers.h"
 #include "kvstore.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -5,25 +6,9 @@
 #include <string.h>
 
 /*********************************************************************
- *                             macros                                *
- *********************************************************************/
-
-#define MAX_WORD_SIZE 100
-#define MAX_LINE_SIZE 1000
-
-/*********************************************************************
- *                    file scoped variables                          *
- *********************************************************************/
-
-static char line[MAX_LINE_SIZE + 1];
-static int CCHAR_POS_ON_LINE;
-
-/*********************************************************************
  *                      forward declarations                         *
  *********************************************************************/
 
-static int read_line();
-static void read_word(char word[]);
 static void conv_str_to_lowcase(char string[]);
 static void print_help_message();
 
@@ -41,48 +26,56 @@ int main() {
 
   print_help_message();
   char cmd[MAX_WORD_SIZE + 1];
-  char key[MAX_WORD_SIZE + 1];
-  char value[MAX_WORD_SIZE + 1];
+  char arg1[MAX_WORD_SIZE + 1];
+  char arg2[MAX_WORD_SIZE + 1];
 
   while (true) {
 
     printf("enter the command : ");
 
     // read the whole line
-    if (!read_line()) {
+    read_line_status status = read_line(stdin);
+
+    switch (status) {
+    case REACHED_EOF:
       printf("reached EOF. exiting program\n");
       return EXIT_SUCCESS;
+    case READ_LINE_SUCCESS:
+      break;
+    case LINE_LIMIT_EXCEEDED:
+      errorf("Error : The command size should be under %d\n", MAX_LINE_SIZE);
+      continue;
     }
 
     // read just the command and convert it to lower case
     read_word(cmd);
     conv_str_to_lowcase(cmd);
 
-    read_word(key);   // get the key
-    read_word(value); // get the value
+    read_word(arg1); // get the arg1
+    read_word(arg2); // get the arg2
 
     // commands with no arguments
     if (!strcmp(cmd, "exit")) {
-      if (key[0]) {
-        printf("Error: 'exit' takes no arguments. Type 'help' for usage.\n");
+      if (arg1[0]) {
+        errorf("Error: 'exit' takes no arguments. Type 'help' for usage.\n");
       } else {
         break;
       }
     } else if (!strcmp(cmd, "help")) {
-      if (key[0]) {
-        printf("Error: 'help' takes no arguments. Type 'help' for usage.\n");
+      if (arg1[0]) {
+        errorf("Error: 'help' takes no arguments. Type 'help' for usage.\n");
       } else {
         print_help_message();
       }
     } else if (!strcmp(cmd, "free")) {
-      if (key[0]) {
-        printf("Error: 'free' takes no arguments. Type 'help' for usage.\n");
+      if (arg1[0]) {
+        errorf("Error: 'free' takes no arguments. Type 'help' for usage.\n");
       } else {
         kvstore_clear(store);
       }
     } else if (!strcmp(cmd, "stats")) {
-      if (key[0]) {
-        printf("Error: 'stats' takes no arguments. Type 'help' for usage.\n");
+      if (arg1[0]) {
+        errorf("Error: 'stats' takes no arguments. Type 'help' for usage.\n");
       } else {
         kvstore_stats(store);
       }
@@ -90,23 +83,51 @@ int main() {
 
     // commands with just one argument
     else if (!strcmp(cmd, "delete")) {
-      if (!key[0]) {
-        printf(
+      if (!arg1[0]) { // key
+        errorf(
             "Error: 'delete' requires key argument. Type 'help' for usage.\n");
-      } else if (value[0]) {
-        printf("Error: 'delete' takes only one argument. Type 'help' for "
+      } else if (arg2[0]) {
+        errorf("Error: 'delete' takes only one argument. Type 'help' for "
                "usage.\n");
       } else {
-        delete_key(store, key);
+        delete_key(store, arg1);
       }
     } else if (!strcmp(cmd, "get")) {
-      if (!key[0]) {
-        printf("Error: 'get' requires key argument. Type 'help' for usage.\n");
-      } else if (value[0]) {
-        printf(
+      if (!arg1[0]) {
+        errorf("Error: 'get' requires key argument. Type 'help' for usage.\n");
+      } else if (arg2[0]) {
+        errorf(
             "Error: 'get' takes only one argument. Type 'help' for usage.\n");
       } else {
-        print_key(store, key);
+        print_key(store, arg1);
+      }
+    }
+
+    else if (!strcmp(cmd, "save")) {
+      if (!arg1[0]) {
+        errorf("Error: 'save' requires filepath argument. Type 'help' for "
+               "usage.\n");
+      } else if (arg2[0]) {
+        errorf(
+            "Error: 'save' takes only one argument. Type 'help' for usage.\n");
+      } else {
+        if (!save_to_file(store, arg1)) {
+          printf("stored saved to file :%s succesfully\n", arg1);
+        }
+      }
+    }
+
+    else if (!strcmp(cmd, "load")) {
+      if (!arg1[0]) {
+        errorf("Error: 'load' requires filepath argument. Type 'help' for "
+               "usage.\n");
+      } else if (arg2[0]) {
+        errorf(
+            "Error: 'load' takes only one argument. Type 'help' for usage.\n");
+      } else {
+        if (!load_from_file(store, arg1)) {
+          printf("store loaded from file :%s succesfully\n", arg1);
+        }
       }
     }
 
@@ -114,19 +135,19 @@ int main() {
     else if (!strcmp(cmd, "put")) {
       char extra_arg[MAX_WORD_SIZE + 1];
       read_word(extra_arg);
-      if (!key[0]) {
-        printf("Error: 'put' requires key argument. Type 'help' for usage.\n");
-      } else if (!value[0]) {
-        printf(
+      if (!arg1[0]) { // key
+        errorf("Error: 'put' requires key argument. Type 'help' for usage.\n");
+      } else if (!arg2[0]) { // value
+        errorf(
             "Error: 'put' requires value argument. Type 'help' for usage.\n");
       } else if (extra_arg[0]) {
-        printf(
+        errorf(
             "Error: 'put' takes only two argument. Type 'help' for usage.\n");
       } else {
-        put_key(store, key, value);
+        put_key(store, arg1, arg2);
       }
     } else {
-      printf("Error: Invalid command. Type 'help' for a list of commands.\n");
+      errorf("Error: Invalid command. Type 'help' for a list of commands.\n");
     }
   }
 
@@ -150,6 +171,10 @@ static void print_help_message() {
          "  *\n");
   printf("* DELETE KEY        - deletes the key from the store                 "
          "  *\n");
+  printf("* SAVE FILEPTH      - saves the store to the file                    "
+         "  *\n");
+  printf("* LOAD FILEPTH      - loads the store from the file                  "
+         "  *\n");
   printf("* stats             - displays the stats of the store                "
          "  *\n");
   printf("* free              - deletes all the keys from the store            "
@@ -171,75 +196,6 @@ static void print_help_message() {
 /*********************************************************************
  *                      Helper Funtions                              *
  *********************************************************************/
-
-static int read_line() {
-  int ch; // have char as int so comparison with EOF works
-  int i = 0;
-  CCHAR_POS_ON_LINE = 0;
-  while (i < MAX_LINE_SIZE && (ch = getchar()) != '\n' && ch != EOF) {
-    line[i++] = ch;
-  }
-  line[i] = '\0';
-  return ch == EOF ? 0 : 1;
-}
-
-static void read_word(char word[]) {
-
-  if (line[CCHAR_POS_ON_LINE] == '\0') {
-    word[0] = '\0';
-    return;
-  }
-
-  char ch;
-  int ccounter_in_line = CCHAR_POS_ON_LINE;
-
-  while (true) {
-    ch = line[ccounter_in_line];
-    if (ch != ' ') {
-      break;
-    }
-    ccounter_in_line++;
-  }
-
-  if (ch == '\0') {
-    word[0] = '\0';
-    return;
-  }
-
-  char word_end;
-
-  int ccounter_in_word = 0;
-  // test the last read char
-  switch (ch) {
-  case 34: // char "
-    word_end = 34;
-    break;
-  case 39: // char '
-    word_end = 39;
-    break;
-  default:
-    word_end = 32; // space
-    word[ccounter_in_word] = ch;
-    ccounter_in_word++;
-  }
-
-  ccounter_in_line++;
-
-  while (ccounter_in_word < MAX_WORD_SIZE &&
-         (ch = line[ccounter_in_line]) != word_end && ch != '\0') {
-    ccounter_in_line++;
-    word[ccounter_in_word] = ch;
-    ccounter_in_word++;
-  }
-  word[ccounter_in_word] = '\0';
-
-  // consume the delimiter
-  if (ch == word_end) {
-    ccounter_in_line++;
-  }
-
-  CCHAR_POS_ON_LINE = ccounter_in_line;
-}
 
 static void conv_str_to_lowcase(char string[]) {
   for (unsigned int i = 0, len = strlen(string); i < len; i++) {
