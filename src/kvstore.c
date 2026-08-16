@@ -395,7 +395,7 @@ static void *set_key_value(node *item, const char *value) {
 
   char *end;
   errno = 0;
-  intmax_t val = strtoimax(value, &end, 10);
+  intmax_t val = strtoimax(value, &end, 0);
   if (end != value && *end == '\0' && errno != ERANGE) {
     item->type = integer;
     if (val > INT_MAX) {
@@ -411,23 +411,23 @@ static void *set_key_value(node *item, const char *value) {
     } else {
       item->value.int_value = (int)val;
     }
-  }
-  errno = 0;
-  double d = strtod(value, &end);
-  if (end != value && *end == '\0' && errno != ERANGE) {
-    item->type = Double;
-    item->value.double_value = d;
   } else {
-    char *item_strval = malloc(strlen(value) + 1);
-    if (item_strval == NULL) {
-      return NULL;
+    errno = 0;
+    double d = strtod(value, &end);
+    if (end != value && *end == '\0' && errno != ERANGE) {
+      item->type = Double;
+      item->value.double_value = d;
+    } else {
+      char *item_strval = malloc(strlen(value) + 1);
+      if (item_strval == NULL) {
+        return NULL;
+      }
+
+      strcpy(item_strval, value);
+      item->value.str_value = item_strval;
+      item->type = string;
     }
-
-    strcpy(item_strval, value);
-    item->value.str_value = item_strval;
-    item->type = string;
   }
-
   free(oldstrvalue);
   return item;
 }
