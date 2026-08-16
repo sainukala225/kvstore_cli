@@ -1,6 +1,5 @@
 #include "kvstore.h"
 #include "helpers.h"
-#include <ctype.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -46,7 +45,6 @@ typedef struct kvstore_t {
  *********************************************************************/
 
 static int hash(const char *key);
-static bool is_valid_number(const char *str);
 static void *set_key_value(node *item, const char *value);
 static void *get_key(Kvstore store, const char *key);
 
@@ -395,10 +393,31 @@ static void *set_key_value(node *item, const char *value) {
 
   char *oldstrvalue = item->type == string ? item->value.str_value : NULL;
 
-  valuetype item_valtype = string;
-
-  if (!is_valid_number(value)) {
-
+  char *end;
+  errno = 0;
+  intmax_t val = strtoimax(value, &end, 10);
+  if (end != value && *end == '\0' && errno != ERANGE) {
+    item->type = integer;
+    if (val > INT_MAX) {
+      errorf("The value %s is higher than max int value (%d) so capping at "
+             "%d\n",
+             value, INT_MAX, INT_MAX);
+      item->value.int_value = INT_MAX;
+    } else if (val < INT_MIN) {
+      errorf("The value %s is less than min int value (%d) so capping at "
+             "%d\n",
+             value, INT_MIN, INT_MIN);
+      item->value.int_value = INT_MIN;
+    } else {
+      item->value.int_value = (int)val;
+    }
+  }
+  errno = 0;
+  double d = strtod(value, &end);
+  if (end != value && *end == '\0' && errno != ERANGE) {
+    item->type = Double;
+    item->value.double_value = d;
+  } else {
     char *item_strval = malloc(strlen(value) + 1);
     if (item_strval == NULL) {
       return NULL;
@@ -406,40 +425,7 @@ static void *set_key_value(node *item, const char *value) {
 
     strcpy(item_strval, value);
     item->value.str_value = item_strval;
-    item->type = item_valtype;
-  } else {
-    bool is_float = false;
-    for (int i = 0; value[i] != '\0'; i++) {
-      if (value[i] == '.' || value[i] == 'e' || value[i] == 'E') {
-        is_float = true;
-        break;
-      }
-    }
-
-    if (is_float) {
-      item->value.double_value = atof(value);
-      item_valtype = Double;
-    } else {
-
-      intmax_t val = strtoimax(value, NULL, 10);
-
-      if (val > INT_MAX) {
-        errorf("The value %s is higher than max int value (%d) so capping at "
-               "%d\n",
-               value, INT_MAX, INT_MAX);
-        item->value.int_value = INT_MAX;
-      } else if (val < INT_MIN) {
-        errorf("The value %s is less than min int value (%d) so capping at "
-               "%d\n",
-               value, INT_MIN, INT_MIN);
-        item->value.int_value = INT_MIN;
-      } else {
-        item->value.int_value = (int)val;
-      }
-      item_valtype = integer;
-    }
-
-    item->type = item_valtype;
+    item->type = string;
   }
 
   free(oldstrvalue);
@@ -453,38 +439,4 @@ static int hash(const char *key) {
     hash_value = ((hash_value << 5) + hash_value) + ((unsigned char)*c);
   }
   return hash_value % BUCKET_SIZE;
-}
-
-static bool is_valid_number(const char *str) {
-  if (str == NULL || *str == '\0') {
-    return false;
-  }
-
-  char *endptr;
-  errno = 0;
-  strtod(str, &endptr);
-
-  if (*endptr != '\0') {
-    return false;
-  }
-
-  if (endptr == str) {
-    return false;
-  }
-
-  if (errno == ERANGE) {
-    return false;
-  }
-  bool has_digit = false;
-  for (const char *p = str; *p != '\0'; p++) {
-    if (isdigit((unsigned char)*p)) {
-      has_digit = true;
-      break;
-    }
-  }
-  if (!has_digit) {
-    return false;
-  }
-
-  return true;
 }
