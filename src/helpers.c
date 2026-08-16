@@ -16,7 +16,11 @@ void errorf(const char *format, ...) {
   vfprintf(stderr, format, ap);
   va_end(ap);
 }
-void close_file(void *fileptr) { fclose(*(void **)fileptr); }
+void close_file(FILE **fp) {
+  if (*fp) {
+    fclose(*fp);
+  }
+}
 
 int read_line(FILE *stream) {
   if (fgets(line, sizeof line, stream) == NULL)

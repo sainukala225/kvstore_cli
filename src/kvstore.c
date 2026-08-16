@@ -336,7 +336,7 @@ int save_to_file(Kvstore store, char *filepath) {
         errorf("Error: Failed when writing to file\n ");
         for (dftries = 1; dftries <= 10; dftries++) {
           if (!remove(filepath)) {
-            break;
+            return 1;
           }
         }
         if (dftries > 10) {

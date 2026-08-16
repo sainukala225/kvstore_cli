@@ -21,7 +21,7 @@ typedef enum {
 } read_line_status;
 
 void errorf(const char *format, ...);
-void close_file(void *fileptr);
+void close_file(FILE **fp);
 int read_line(FILE *stream);
 void read_word(char word[]);
 #endif
