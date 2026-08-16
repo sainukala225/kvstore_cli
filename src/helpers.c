@@ -84,6 +84,16 @@ void read_word(char word[]) {
 
   while (ccounter_in_word < MAX_WORD_SIZE &&
          (ch = line[ccounter_in_line]) != word_end && ch != '\0') {
+    if (ch == '\\') {
+      char next_char = line[ccounter_in_line + 1];
+      if (next_char == word_end || next_char == '\\') {
+        word[ccounter_in_word] = next_char;
+        ccounter_in_line += 2;
+        ccounter_in_word++;
+        continue;
+      }
+    }
+
     ccounter_in_line++;
     word[ccounter_in_word] = ch;
     ccounter_in_word++;

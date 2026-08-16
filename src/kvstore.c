@@ -2,6 +2,9 @@
 #include "helpers.h"
 #include <ctype.h>
 #include <errno.h>
+#include <inttypes.h>
+#include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -417,7 +420,22 @@ static void *set_key_value(node *item, const char *value) {
       item->value.double_value = atof(value);
       item_valtype = Double;
     } else {
-      item->value.int_value = strtol(value, NULL, 10);
+
+      intmax_t val = strtoimax(value, NULL, 10);
+
+      if (val > INT_MAX) {
+        errorf("The value %s is higher than max int value (%d) so capping at "
+               "%d\n",
+               value, INT_MAX, INT_MAX);
+        item->value.int_value = INT_MAX;
+      } else if (val < INT_MIN) {
+        errorf("The value %s is less than min int value (%d) so capping at "
+               "%d\n",
+               value, INT_MIN, INT_MIN);
+        item->value.int_value = INT_MIN;
+      } else {
+        item->value.int_value = (int)val;
+      }
       item_valtype = integer;
     }
 
