@@ -16,29 +16,46 @@ static void print_help_message();
  *                            main program                           *
  *********************************************************************/
 
-int main() {
+int main(int argc, char *argv[]) {
 
-  Kvstore store = kvstore_create();
-  if (store == NULL) {
-    printf("failed to create the store, exiting program.\n");
+  bool test_mode = false;
+
+  if (argc == 2 && !strcmp(argv[1], "-T")) {
+    test_mode = true;
+  } else if (argc > 2) {
+    errorf("Error : Invalid program Initialization\n");
     return EXIT_FAILURE;
   }
 
-  print_help_message();
+  Kvstore store = kvstore_create();
+  if (store == NULL) {
+    errorf("failed to create the store, exiting program.\n");
+    return EXIT_FAILURE;
+  }
+
+  if (!test_mode) {
+    print_help_message();
+  }
+
   char cmd[MAX_WORD_SIZE + 1];
   char arg1[MAX_WORD_SIZE + 1];
   char arg2[MAX_WORD_SIZE + 1];
 
   while (true) {
 
-    printf("enter the command : ");
+    if (!test_mode) {
+      printf("enter the command : ");
+    }
 
     // read the whole line
     read_line_status status = read_line(stdin);
 
     switch (status) {
     case REACHED_EOF:
-      printf("reached EOF. exiting program\n");
+      kvstore_free(store);
+      if (!test_mode) {
+        printf("reached EOF. exiting program\n");
+      }
       return EXIT_SUCCESS;
     case READ_LINE_SUCCESS:
       break;
@@ -147,12 +164,18 @@ int main() {
         put_key(store, arg1, arg2);
       }
     } else {
-      errorf("Error: Invalid command. Type 'help' for a list of commands.\n");
+      if (!cmd[0]) {
+        continue; // To skip empty lines in test mode
+      } else {
+        errorf("Error: Invalid command. Type 'help' for a list of commands.\n");
+      }
     }
   }
 
   kvstore_free(store);
-  printf("exitted program successfully.\n");
+  if (!test_mode) {
+    printf("exitted program successfully.\n");
+  }
   return EXIT_SUCCESS;
 }
 

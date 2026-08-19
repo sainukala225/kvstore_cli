@@ -20,6 +20,9 @@ build/obj/%.o : src/%.c
 run : $(TARGET)
 	./$(TARGET)
 
+test : $(TARGET)
+	./tests/cases.sh
+
 valgrind : $(TARGET)
 	valgrind --leak-check=yes --track-origins=yes $(TARGET)
 

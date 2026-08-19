@@ -13,6 +13,7 @@
  *********************************************************************/
 
 #define BUCKET_SIZE 101
+#define DOUBLE_BUF_SIZE 32
 
 /*********************************************************************
  *                          custom types                             *
@@ -23,7 +24,7 @@ typedef enum valuetype { integer, string, Double } valuetype;
 typedef struct node {
   char *key;
   union value {
-    int int_value;
+    intmax_t int_value;
     char *str_value;
     double double_value;
   } value;
@@ -47,6 +48,7 @@ typedef struct kvstore_t {
 static int hash(const char *key);
 static void *set_key_value(node *item, const char *value);
 static void *get_key(Kvstore store, const char *key);
+static const char *format_double(char *buf, size_t size, double d, bool exact);
 
 /*********************************************************************
  *                       kvstore Funtions                            *
@@ -231,23 +233,27 @@ static void *get_key(Kvstore store, const char *key) {
 
 void print_key(Kvstore store, const char *key) {
   if (store == NULL || key == NULL) {
-    printf("please enter proper values\n");
+    errorf("please enter proper values\n");
     return;
   }
   node *item = get_key(store, key);
   if (!item) {
-    printf("Item doesn't exist\n");
+    errorf("Error: Item doesn't exist\n");
     return;
   }
   switch (item->type) {
   case integer:
-    printf("%s : %d\n", key, item->value.int_value);
+    printf("\"%s\" : %" PRIdMAX "\n", key, item->value.int_value);
     break;
   case string:
-    printf("%s : %s\n", key, item->value.str_value);
+    printf("\"%s\" : \"%s\"\n", key, item->value.str_value);
     break;
   case Double:
-    printf("%s : %lf\n", key, item->value.double_value);
+    char buf[DOUBLE_BUF_SIZE];
+    if (format_double(buf, sizeof buf, item->value.double_value, false))
+      printf("\"%s\" : %s\n", key, buf);
+    else
+      errorf("Error: cannot format value of key %s\n", key);
     break;
   }
 }
@@ -313,20 +319,24 @@ int save_to_file(Kvstore store, char *filepath) {
     errorf("Error: Failed to create %s to save store\n", filepath);
     return 1;
   }
-  int status;
-  int dftries;
+  int status = 0;
 
   for (int i = 0; i < BUCKET_SIZE; i++) {
     node *curr = store->bucket[i];
     while (curr != NULL) {
       switch (curr->type) {
       case integer:
-        status = fprintf(fileptr, "PUT '%s' '%d'\n", curr->key,
+        status = fprintf(fileptr, "PUT '%s' '%" PRIdMAX "'\n", curr->key,
                          curr->value.int_value);
         break;
       case Double:
-        status = fprintf(fileptr, "PUT '%s' '%lf'\n", curr->key,
-                         curr->value.double_value);
+        char buf[DOUBLE_BUF_SIZE];
+        if (format_double(buf, sizeof buf, curr->value.double_value, true)) {
+          status = fprintf(fileptr, "PUT '%s' '%s'\n", curr->key, buf);
+        } else {
+          errorf("Error: cannot format value of key %s\n", curr->key);
+          status = -1;
+        }
         break;
       case string:
         status = fprintf(fileptr, "PUT '%s' '%s'\n", curr->key,
@@ -334,6 +344,7 @@ int save_to_file(Kvstore store, char *filepath) {
         break;
       }
       if (status < 0) {
+        int dftries;
         errorf("Error: Failed when writing to file\n ");
         for (dftries = 1; dftries <= 10; dftries++) {
           if (!remove(filepath)) {
@@ -398,19 +409,9 @@ static void *set_key_value(node *item, const char *value) {
   intmax_t val = strtoimax(value, &end, 0);
   if (end != value && *end == '\0' && errno != ERANGE) {
     item->type = integer;
-    if (val > INT_MAX) {
-      errorf("The value %s is higher than max int value (%d) so capping at "
-             "%d\n",
-             value, INT_MAX, INT_MAX);
-      item->value.int_value = INT_MAX;
-    } else if (val < INT_MIN) {
-      errorf("The value %s is less than min int value (%d) so capping at "
-             "%d\n",
-             value, INT_MIN, INT_MIN);
-      item->value.int_value = INT_MIN;
-    } else {
-      item->value.int_value = (int)val;
-    }
+
+    item->value.int_value = val;
+
   } else {
     errno = 0;
     double d = strtod(value, &end);
@@ -439,4 +440,23 @@ static int hash(const char *key) {
     hash_value = ((hash_value << 5) + hash_value) + ((unsigned char)*c);
   }
   return hash_value % BUCKET_SIZE;
+}
+
+static const char *format_double(char *buf, size_t size, double d, bool exact) {
+  int n = snprintf(buf, size, exact ? "%.17g" : "%g", d);
+
+  if (n < 0 || (size_t)n >= size) {
+    return NULL; // encoding error, or output was truncated
+  }
+
+  /* No '.', no exponent, and not inf/nan means it printed as a bare
+     integer, so mark it as floating point. 'n' matches both nan and inf. */
+  if (!strpbrk(buf, ".eni")) {
+    if ((size_t)n + 3 > size) {
+      return NULL; // no room for ".0" and the terminator
+    }
+    strcpy(buf + n, ".0");
+  }
+
+  return buf;
 }

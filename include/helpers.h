@@ -20,6 +20,7 @@ typedef enum {
   LINE_LIMIT_EXCEEDED
 } read_line_status;
 
+[[gnu::format(printf, 1, 2)]]
 void errorf(const char *format, ...);
 void close_file(FILE **fp);
 int read_line(FILE *stream);
