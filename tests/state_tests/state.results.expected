@@ -1,0 +1,66 @@
+********************* stats of kvstore ***********************
+* The bucket size (capacity)     : 101                       *
+* The number of occupied_buckets :   1                       *
+* The total items in the store   :   1                       *
+* The load factor                : 0.01                      *
+* The number of int items        :   0                       *
+* The number of double items     :   0                       *
+* The number of string items     :   1                       *
+**************************************************************
+********************* stats of kvstore ***********************
+* The bucket size (capacity)     : 101                       *
+* The number of occupied_buckets :   1                       *
+* The total items in the store   :   1                       *
+* The load factor                : 0.01                      *
+* The number of int items        :   1                       *
+* The number of double items     :   0                       *
+* The number of string items     :   0                       *
+**************************************************************
+********************* stats of kvstore ***********************
+* The bucket size (capacity)     : 101                       *
+* The number of occupied_buckets :   1                       *
+* The total items in the store   :   1                       *
+* The load factor                : 0.01                      *
+* The number of int items        :   1                       *
+* The number of double items     :   0                       *
+* The number of string items     :   0                       *
+**************************************************************
+********************* stats of kvstore ***********************
+* The bucket size (capacity)     : 101                       *
+* The number of occupied_buckets :   0                       *
+* The total items in the store   :   0                       *
+* The load factor                : 0.00                      *
+* The number of int items        :   0                       *
+* The number of double items     :   0                       *
+* The number of string items     :   0                       *
+**************************************************************
+********************* stats of kvstore ***********************
+* The bucket size (capacity)     : 101                       *
+* The number of occupied_buckets :   3                       *
+* The total items in the store   :   3                       *
+* The load factor                : 0.03                      *
+* The number of int items        :   1                       *
+* The number of double items     :   1                       *
+* The number of string items     :   1                       *
+**************************************************************
+********************* stats of kvstore ***********************
+* The bucket size (capacity)     : 101                       *
+* The number of occupied_buckets :   0                       *
+* The total items in the store   :   0                       *
+* The load factor                : 0.00                      *
+* The number of int items        :   0                       *
+* The number of double items     :   0                       *
+* The number of string items     :   0                       *
+**************************************************************
+********************* stats of kvstore ***********************
+* The bucket size (capacity)     : 101                       *
+* The number of occupied_buckets :   1                       *
+* The total items in the store   :   2                       *
+* The load factor                : 0.02                      *
+* The number of int items        :   2                       *
+* The number of double items     :   0                       *
+* The number of string items     :   0                       *
+**************************************************************
+"a" : 1
+"bx" : 2
+"a" : 1
