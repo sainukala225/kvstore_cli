@@ -71,10 +71,10 @@ exit
 EOF
 
 total_result_tests=$(wc -l <cases.results.expected)
-total_result_tests_failed=$(diff cases.results cases.results.expected | grep -c '>')
+total_result_tests_failed=$(diff cases.results cases.results.expected | grep -c '^>')
 
 total_error_tests=$(wc -l <cases.errors.expected)
-total_error_tests_failed=$(diff cases.errors cases.errors.expected | grep -c '>')
+total_error_tests_failed=$(diff cases.errors cases.errors.expected | grep -c '^>')
 
 total_tests=$((total_result_tests + total_error_tests))
 total_tests_failed=$((total_result_tests_failed + total_error_tests_failed))

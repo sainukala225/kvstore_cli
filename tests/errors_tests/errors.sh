@@ -29,10 +29,10 @@ puut key value
 EOF
 
 total_result_tests=$(wc -l <errors.results.expected)
-total_result_tests_failed=$(diff errors.results errors.results.expected | grep -c '>')
+total_result_tests_failed=$(diff errors.results errors.results.expected | grep -c '^>')
 
 total_error_tests=$(wc -l <errors.errors.expected)
-total_error_tests_failed=$(diff errors.errors errors.errors.expected | grep -c '>')
+total_error_tests_failed=$(diff errors.errors errors.errors.expected | grep -c '^>')
 
 total_tests=$((total_result_tests + total_error_tests))
 total_tests_failed=$((total_result_tests_failed + total_error_tests_failed))

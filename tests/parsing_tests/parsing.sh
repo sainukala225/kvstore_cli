@@ -29,10 +29,10 @@ put 'abc 1
 EOF
 
 total_result_tests=$(wc -l <parsing.results.expected)
-total_result_tests_failed=$(diff parsing.results parsing.results.expected | grep -c '>')
+total_result_tests_failed=$(diff parsing.results parsing.results.expected | grep -c '^>')
 
 total_error_tests=$(wc -l <parsing.errors.expected)
-total_error_tests_failed=$(diff parsing.errors parsing.errors.expected | grep -c '>')
+total_error_tests_failed=$(diff parsing.errors parsing.errors.expected | grep -c '^>')
 
 total_tests=$((total_result_tests + total_error_tests))
 total_tests_failed=$((total_result_tests_failed + total_error_tests_failed))
