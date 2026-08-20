@@ -21,7 +21,7 @@ run : $(TARGET)
 	./$(TARGET)
 
 test : $(TARGET)
-	./tests/cases.sh
+	./tests/run.sh
 
 valgrind : $(TARGET)
 	valgrind --leak-check=yes --track-origins=yes $(TARGET)

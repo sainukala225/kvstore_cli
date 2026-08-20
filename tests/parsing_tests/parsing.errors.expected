@@ -1,0 +1,4 @@
+Error: 'put' takes only two argument. Type 'help' for usage.
+Error: 'get' takes only one argument. Type 'help' for usage.
+Error : The command size should be under 1000.
+Error: 'put' requires value argument. Type 'help' for usage.

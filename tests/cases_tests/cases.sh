@@ -2,7 +2,7 @@
 
 cd "$(dirname "$0")"
 
-cat <<'EOF' | ../build/bin/kvstore -T 1>cases.results 2>cases.errors
+cat <<'EOF' | ../../build/bin/kvstore -T 1>cases.results 2>cases.errors
 
 put dec_int1 123
 get dec_int1
@@ -70,18 +70,20 @@ get int_not_via_double
 exit
 EOF
 
-diff cases.results cases.results.expected
+total_result_tests=$(wc -l <cases.results.expected)
+total_result_tests_failed=$(diff cases.results cases.results.expected | grep -c '>')
 
-results=$?
+total_error_tests=$(wc -l <cases.errors.expected)
+total_error_tests_failed=$(diff cases.errors cases.errors.expected | grep -c '>')
 
-diff cases.errors cases.errors.expected
+total_tests=$((total_result_tests + total_error_tests))
+total_tests_failed=$((total_result_tests_failed + total_error_tests_failed))
 
-errors=$?
-
-if [[ $results -eq 0 && $errors -eq 0 ]]; then
-  echo "Test cases passed"
+if [[ $total_tests_failed -eq 0 ]]; then
+  echo "cases.sh: ${total_tests}/${total_tests} Test cases passed"
   exit 0
 else
-  echo "Test cases output don't match expected results"
+  echo "cases.sh: ${total_result_tests_failed}/${total_result_tests} result tests failed"
+  echo "cases.sh: ${total_error_tests_failed}/${total_error_tests} error tests failed"
   exit 1
 fi

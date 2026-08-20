@@ -1,6 +1,6 @@
 build/
 
-tests/cases.errors
-tests/cases.results
+tests/**/*.errors
+tests/**/*.results
 
 compile_commands.json

@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     case READ_LINE_SUCCESS:
       break;
     case LINE_LIMIT_EXCEEDED:
-      errorf("Error : The command size should be under %d\n", MAX_LINE_SIZE);
+      errorf("Error : The command size should be under %d.\n", MAX_LINE_SIZE);
       continue;
     }
 
