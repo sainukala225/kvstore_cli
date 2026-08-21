@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+set -u
 cd "$(dirname "$0")"
 
 cat <<'EOF' | ../../build/bin/kvstore -T 1>parsing.results 2>parsing.errors

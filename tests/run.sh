@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+set -u
 cd "$(dirname "$0")"
 
 fail=0
