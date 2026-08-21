@@ -22,7 +22,7 @@ void close_file(FILE **fp) {
   }
 }
 
-int read_line(FILE *stream) {
+read_line_status read_line(FILE *stream) {
   if (fgets(line, sizeof line, stream) == NULL)
     return REACHED_EOF;
 
@@ -40,11 +40,13 @@ int read_line(FILE *stream) {
   return READ_LINE_SUCCESS;
 }
 
-void read_word(char word[]) {
+// On any status other than WORD_OK the caller must abandon the line;
+// the read position is left unspecified.
+read_word_status read_word(char word[]) {
 
   if (line[CCHAR_POS_ON_LINE] == '\0') {
     word[0] = '\0';
-    return;
+    return WORD_OK;
   }
 
   char ch;
@@ -60,11 +62,10 @@ void read_word(char word[]) {
 
   if (ch == '\0') {
     word[0] = '\0';
-    return;
+    return WORD_OK;
   }
 
   char word_end;
-
   int ccounter_in_word = 0;
   // test the last read char
   switch (ch) {
@@ -91,6 +92,9 @@ void read_word(char word[]) {
         ccounter_in_line += 2;
         ccounter_in_word++;
         continue;
+      } else {
+        word[ccounter_in_word] = '\0';
+        return WORD_INVALID_ESCAPE;
       }
     }
 
@@ -100,10 +104,18 @@ void read_word(char word[]) {
   }
   word[ccounter_in_word] = '\0';
 
+  char terminator = line[ccounter_in_line];
+  if (ccounter_in_word == MAX_WORD_SIZE && terminator != word_end) {
+    return WORD_TOO_LONG;
+  } else if (ccounter_in_word < MAX_WORD_SIZE &&
+             (word_end == 34 || word_end == 39) && terminator != word_end) {
+    return WORD_UNTERMINATED_QUOTE;
+  }
   // consume the delimiter
-  if (ch == word_end) {
+  if (terminator == word_end) {
     ccounter_in_line++;
   }
 
   CCHAR_POS_ON_LINE = ccounter_in_line;
+  return WORD_OK;
 }

@@ -17,12 +17,19 @@
 typedef enum {
   READ_LINE_SUCCESS,
   REACHED_EOF,
-  LINE_LIMIT_EXCEEDED
+  LINE_LIMIT_EXCEEDED,
 } read_line_status;
+
+typedef enum {
+  WORD_OK,
+  WORD_INVALID_ESCAPE,
+  WORD_TOO_LONG,
+  WORD_UNTERMINATED_QUOTE,
+} read_word_status;
 
 [[gnu::format(printf, 1, 2)]]
 void errorf(const char *format, ...);
 void close_file(FILE **fp);
-int read_line(FILE *stream);
-void read_word(char word[]);
+read_line_status read_line(FILE *stream);
+read_word_status read_word(char word[]);
 #endif

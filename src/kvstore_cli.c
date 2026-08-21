@@ -11,6 +11,8 @@
 
 static void conv_str_to_lowcase(char string[]);
 static void print_help_message();
+static bool handle_read_word_status(read_word_status status,
+                                    const char *wordtype);
 
 /*********************************************************************
  *                            main program                           *
@@ -48,9 +50,9 @@ int main(int argc, char *argv[]) {
     }
 
     // read the whole line
-    read_line_status status = read_line(stdin);
+    read_line_status line_status = read_line(stdin);
 
-    switch (status) {
+    switch (line_status) {
     case REACHED_EOF:
       kvstore_free(store);
       if (!test_mode) {
@@ -64,12 +66,20 @@ int main(int argc, char *argv[]) {
       continue;
     }
 
+    if (!handle_read_word_status(read_word(cmd), "Command")) {
+      continue;
+    }
+
     // read just the command and convert it to lower case
-    read_word(cmd);
     conv_str_to_lowcase(cmd);
 
-    read_word(arg1); // get the arg1
-    read_word(arg2); // get the arg2
+    if (!handle_read_word_status(read_word(arg1), "Key")) { // get the arg1
+      continue;
+    }
+
+    if (!handle_read_word_status(read_word(arg2), "Value")) { // get the arg2
+      continue;
+    }
 
     // commands with no arguments
     if (!strcmp(cmd, "exit")) {
@@ -224,4 +234,25 @@ static void conv_str_to_lowcase(char string[]) {
   for (unsigned int i = 0, len = strlen(string); i < len; i++) {
     string[i] = tolower((unsigned char)string[i]);
   }
+}
+
+static bool handle_read_word_status(read_word_status status,
+                                    const char *wordtype) {
+  bool success = false;
+  switch (status) {
+  case WORD_OK:
+    success = true;
+    break;
+  case WORD_TOO_LONG:
+    errorf("Error : %s is too long (should be under %d)\n", wordtype,
+           MAX_WORD_SIZE);
+    break;
+  case WORD_INVALID_ESCAPE:
+    errorf("Error : Invalid escape in the %s\n", wordtype);
+    break;
+  case WORD_UNTERMINATED_QUOTE:
+    errorf("Error : Unterminated quote in the %s\n", wordtype);
+    break;
+  }
+  return success;
 }
