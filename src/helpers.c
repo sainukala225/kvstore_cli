@@ -1,6 +1,7 @@
 #include "helpers.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /*********************************************************************
@@ -22,6 +23,7 @@ void close_file(FILE **fp) {
   }
 }
 
+void free_mem(void *ptr) { free(*(void **)ptr); }
 read_line_status read_line(FILE *stream) {
   if (fgets(line, sizeof line, stream) == NULL)
     return REACHED_EOF;

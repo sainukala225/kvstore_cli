@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <limits.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,7 +50,8 @@ static int hash(const char *key);
 static void *set_key_value(node *item, const char *value);
 static void *get_key(Kvstore store, const char *key);
 static const char *format_double(char *buf, size_t size, double d, bool exact);
-
+[[gnu::malloc, gnu::malloc(free, 1)]]
+static char *transform_word_for_file_write(const char *word, char delimiter);
 /*********************************************************************
  *                       kvstore Funtions                            *
  *********************************************************************/
@@ -324,25 +326,41 @@ int save_to_file(Kvstore store, char *filepath) {
   for (int i = 0; i < BUCKET_SIZE; i++) {
     node *curr = store->bucket[i];
     while (curr != NULL) {
+      CLEANUP(free_mem)
+      char *key = transform_word_for_file_write(curr->key, 39);
+      if (!key) {
+        errorf("Error : Failed to format key for file write\n");
+        status = -1;
+        goto check;
+      }
       switch (curr->type) {
       case integer:
-        status = fprintf(fileptr, "PUT '%s' '%" PRIdMAX "'\n", curr->key,
+        status = fprintf(fileptr, "PUT '%s' '%" PRIdMAX "'\n", key,
                          curr->value.int_value);
         break;
       case Double:
         char buf[DOUBLE_BUF_SIZE];
         if (format_double(buf, sizeof buf, curr->value.double_value, true)) {
-          status = fprintf(fileptr, "PUT '%s' '%s'\n", curr->key, buf);
+          status = fprintf(fileptr, "PUT '%s' '%s'\n", key, buf);
         } else {
           errorf("Error: cannot format value of key %s\n", curr->key);
           status = -1;
         }
         break;
       case string:
-        status = fprintf(fileptr, "PUT '%s' '%s'\n", curr->key,
-                         curr->value.str_value);
+        CLEANUP(free_mem)
+        char *str_value =
+            transform_word_for_file_write(curr->value.str_value, 39);
+        if (!str_value) {
+          errorf("Error : Failed to format string value for file write\n");
+          status = -1;
+          goto check;
+        }
+        status = fprintf(fileptr, "PUT '%s' '%s'\n", key, str_value);
+        free(str_value);
         break;
       }
+    check:
       if (status < 0) {
         int dftries;
         errorf("Error: Failed when writing to file\n ");
@@ -459,4 +477,32 @@ static const char *format_double(char *buf, size_t size, double d, bool exact) {
   }
 
   return buf;
+}
+
+static char *transform_word_for_file_write(const char *word, char delimiter) {
+  size_t original_word_len = strlen(word);
+  size_t transformed_word_length = original_word_len;
+  for (size_t i = 0; i < original_word_len; i++) {
+    if (*(word + i) == delimiter || *(word + i) == '\\') {
+      transformed_word_length++;
+    }
+  }
+  char *transformed_word = malloc(transformed_word_length + 1);
+
+  if (!transformed_word) {
+    return NULL;
+  }
+  size_t pos = 0;
+  for (size_t i = 0; i < original_word_len; i++) {
+    if (*(word + i) != delimiter && *(word + i) != '\\') {
+      *(transformed_word + pos) = *(word + i);
+    } else {
+      *(transformed_word + pos) = '\\';
+      pos++;
+      *(transformed_word + pos) = *(word + i);
+    }
+    pos++;
+  }
+  transformed_word[pos] = '\0';
+  return transformed_word;
 }
