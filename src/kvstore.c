@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 /*********************************************************************
  *                              macros                               *
@@ -240,7 +241,7 @@ void print_key(Kvstore store, const char *key) {
   }
   node *item = get_key(store, key);
   if (!item) {
-    errorf("Error: Item doesn't exist\n");
+    errorf("Error : Item doesn't exist\n");
     return;
   }
   switch (item->type) {
@@ -255,7 +256,7 @@ void print_key(Kvstore store, const char *key) {
     if (format_double(buf, sizeof buf, item->value.double_value, false))
       printf("\"%s\" : %s\n", key, buf);
     else
-      errorf("Error: cannot format value of key %s\n", key);
+      errorf("Error : cannot format value of key %s\n", key);
     break;
   }
 }
@@ -316,9 +317,19 @@ int delete_key(Kvstore store, const char *key) {
  *********************************************************************/
 
 int save_to_file(Kvstore store, char *filepath) {
-  CLEANUP(close_file) FILE *fileptr = fopen(filepath, "w");
+  char tmpfilepath[MAX_WORD_SIZE + 5];
+  snprintf(tmpfilepath, sizeof(tmpfilepath), "%s.tmp", filepath);
+  errno = 0;
+  FILE *fileptr = fopen(tmpfilepath, "wx");
   if (!fileptr) {
-    errorf("Error: Failed to create %s to save store\n", filepath);
+    if (errno == EEXIST) {
+      errorf("Error : Failed to create %s, file under that name already "
+             "exists. If it's a leftover please delete it and try again.\n",
+             tmpfilepath);
+    } else {
+      errorf("Error : Failed to create %s : %s\n", tmpfilepath,
+             strerror(errno));
+    }
     return 1;
   }
   int status = 0;
@@ -330,8 +341,7 @@ int save_to_file(Kvstore store, char *filepath) {
       char *key = transform_word_for_file_write(curr->key, 39);
       if (!key) {
         errorf("Error : Failed to format key for file write\n");
-        status = -1;
-        goto check;
+        goto fail_close;
       }
       switch (curr->type) {
       case integer:
@@ -343,7 +353,7 @@ int save_to_file(Kvstore store, char *filepath) {
         if (format_double(buf, sizeof buf, curr->value.double_value, true)) {
           status = fprintf(fileptr, "PUT '%s' '%s'\n", key, buf);
         } else {
-          errorf("Error: cannot format value of key %s\n", curr->key);
+          errorf("Error : cannot format value of key %s\n", curr->key);
           status = -1;
         }
         break;
@@ -353,37 +363,61 @@ int save_to_file(Kvstore store, char *filepath) {
             transform_word_for_file_write(curr->value.str_value, 39);
         if (!str_value) {
           errorf("Error : Failed to format string value for file write\n");
-          status = -1;
-          goto check;
+          goto fail_close;
         }
         status = fprintf(fileptr, "PUT '%s' '%s'\n", key, str_value);
-        free(str_value);
         break;
       }
-    check:
       if (status < 0) {
-        int dftries;
-        errorf("Error: Failed when writing to file\n ");
-        for (dftries = 1; dftries <= 10; dftries++) {
-          if (!remove(filepath)) {
-            return 1;
-          }
-        }
-        if (dftries > 10) {
-          errorf("Error: Failed to delete the file %s", filepath);
-          return 1;
-        }
+        goto fail_close;
       }
       curr = curr->next;
     }
   }
+
+  errno = 0;
+  if (fflush(fileptr) < 0) {
+    errorf("Error : Failed to write data from file %s to kernel : %s\n",
+           tmpfilepath, strerror(errno));
+    goto fail_close;
+  }
+
+  errno = 0;
+  if (fsync(fileno(fileptr)) < 0) {
+    errorf("Error : Failed to write data from kernel to disk : %s\n",
+           strerror(errno));
+    goto fail_close;
+  }
+
+  errno = 0;
+  if (fclose(fileptr) < 0) {
+    errorf("Error : Failed to close the file %s : %s\n", tmpfilepath,
+           strerror(errno));
+    goto fail;
+  }
+
+  errno = 0;
+  if (rename(tmpfilepath, filepath) != 0) {
+    errorf("Error : Failed to create file %s : %s\n", filepath,
+           strerror(errno));
+    goto fail;
+  }
   return 0;
+
+fail_close:
+  fclose(fileptr);
+
+fail:
+  if (remove(tmpfilepath) != 0) {
+    errorf("Error : Failed to delete the file %s\n", tmpfilepath);
+  }
+  return 1;
 }
 
 int load_from_file(Kvstore store, char *filepath) {
   CLEANUP(close_file) FILE *fileptr = fopen(filepath, "r");
   if (!fileptr) {
-    errorf("Error: Failed to open the file %s\n", filepath);
+    errorf("Error : Failed to open the file %s\n", filepath);
     return 1;
   }
   char cmd[MAX_WORD_SIZE + 1];

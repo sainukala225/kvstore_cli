@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
             "Error: 'save' takes only one argument. Type 'help' for usage.\n");
       } else {
         if (!save_to_file(store, arg1)) {
-          printf("stored saved to file :%s succesfully\n", arg1);
+          printf("store saved to file %s succesfully\n", arg1);
         }
       }
     }
