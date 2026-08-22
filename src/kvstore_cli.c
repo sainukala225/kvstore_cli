@@ -61,6 +61,11 @@ int main(int argc, char *argv[]) {
       return EXIT_SUCCESS;
     case READ_LINE_SUCCESS:
       break;
+    case READ_LINE_FAILED:
+      errorf("Error : Failed to read the line\n");
+      errorf("Exiting the program\n");
+      kvstore_free(store);
+      exit(EXIT_FAILURE);
     case LINE_LIMIT_EXCEEDED:
       errorf("Error : The command size should be under %d.\n", MAX_LINE_SIZE);
       continue;
@@ -154,6 +159,8 @@ int main(int argc, char *argv[]) {
       } else {
         if (!load_from_file(store, arg1)) {
           printf("store loaded from file %s successfully\n", arg1);
+        } else {
+          errorf("Error : Failed to load the store\n");
         }
       }
     }

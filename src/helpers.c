@@ -24,9 +24,15 @@ void close_file(FILE **fp) {
 }
 
 void free_mem(void *ptr) { free(*(void **)ptr); }
+
 read_line_status read_line(FILE *stream) {
-  if (fgets(line, sizeof line, stream) == NULL)
-    return REACHED_EOF;
+  if (fgets(line, sizeof line, stream) == NULL) {
+    if (feof(stream)) {
+      return REACHED_EOF;
+    } else {
+      return READ_LINE_FAILED;
+    }
+  }
 
   if (strchr(line, '\n') == NULL && !feof(stream)) {
     // Buffer filled before the line ended, so the rest is still queued.

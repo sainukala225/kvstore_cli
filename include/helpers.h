@@ -18,6 +18,7 @@ typedef enum {
   READ_LINE_SUCCESS,
   REACHED_EOF,
   LINE_LIMIT_EXCEEDED,
+  READ_LINE_FAILED,
 } read_line_status;
 
 typedef enum {

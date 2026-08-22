@@ -434,6 +434,10 @@ int load_from_file(Kvstore store, char *filepath) {
       return 0;
     case READ_LINE_SUCCESS:
       break;
+    case READ_LINE_FAILED:
+      errorf("Error : Failed to read the line %d, aborting the load\n",
+             line_count);
+      return 1;
     case LINE_LIMIT_EXCEEDED:
       errorf("Error : The command size on line %d should be under %d\n",
              line_count, MAX_LINE_SIZE);
