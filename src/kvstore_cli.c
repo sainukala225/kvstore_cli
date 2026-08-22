@@ -184,7 +184,7 @@ int main(int argc, char *argv[]) {
 
   kvstore_free(store);
   if (!test_mode) {
-    printf("exitted program successfully.\n");
+    printf("exited program successfully.\n");
   }
   return EXIT_SUCCESS;
 }
