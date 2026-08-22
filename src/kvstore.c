@@ -54,7 +54,7 @@ static const char *format_double(char *buf, size_t size, double d, bool exact);
 [[gnu::malloc, gnu::malloc(free, 1)]]
 static char *transform_word_for_file_write(const char *word, char delimiter);
 /*********************************************************************
- *                       kvstore Funtions                            *
+ *                       kvstore Functions                            *
  *********************************************************************/
 
 Kvstore kvstore_create() {
@@ -313,7 +313,7 @@ int delete_key(Kvstore store, const char *key) {
 }
 
 /*********************************************************************
- *                      File save/load Funtions                      *
+ *                      File save/load Functions                      *
  *********************************************************************/
 
 int save_to_file(Kvstore store, char *filepath) {
@@ -449,7 +449,7 @@ int load_from_file(Kvstore store, char *filepath) {
   return 0;
 }
 /*********************************************************************
- *                      Helper Funtions                              *
+ *                      Helper Functions                              *
  *********************************************************************/
 
 static void *set_key_value(node *item, const char *value) {

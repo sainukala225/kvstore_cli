@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
             "Error: 'save' takes only one argument. Type 'help' for usage.\n");
       } else {
         if (!save_to_file(store, arg1)) {
-          printf("store saved to file %s succesfully\n", arg1);
+          printf("store saved to file %s successfully\n", arg1);
         }
       }
     }
@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
             "Error: 'load' takes only one argument. Type 'help' for usage.\n");
       } else {
         if (!load_from_file(store, arg1)) {
-          printf("store loaded from file :%s succesfully\n", arg1);
+          printf("store loaded from file %s successfully\n", arg1);
         }
       }
     }
@@ -227,7 +227,7 @@ static void print_help_message() {
 }
 
 /*********************************************************************
- *                      Helper Funtions                              *
+ *                      Helper Functions                              *
  *********************************************************************/
 
 static void conv_str_to_lowcase(char string[]) {
