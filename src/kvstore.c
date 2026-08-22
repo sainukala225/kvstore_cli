@@ -1,5 +1,6 @@
 #include "kvstore.h"
 #include "helpers.h"
+#include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -48,6 +49,7 @@ typedef struct kvstore_t {
  *********************************************************************/
 
 static int hash(const char *key);
+static int kvstore_merge_into(Kvstore to, Kvstore from);
 static void *set_key_value(node *item, const char *value);
 static void *get_key(Kvstore store, const char *key);
 static const char *format_double(char *buf, size_t size, double d, bool exact);
@@ -100,6 +102,71 @@ void kvstore_clear(Kvstore store) {
   store->int_items = 0;
   store->double_items = 0;
   store->str_items = 0;
+}
+
+static int kvstore_merge_into(Kvstore to, Kvstore from) {
+  if (!from) {
+    errorf("The source store can't be null\n");
+    return 1;
+  }
+  if (!to) {
+    errorf("The store to merge into can't be null\n");
+    return 1;
+  }
+
+  if (from == to) {
+    errorf("The source and destination can't be the same\n");
+    return 1;
+  }
+
+  for (int i = 0; i < BUCKET_SIZE; i++) {
+    node *tail = NULL, *curr, *tmp;
+    curr = from->bucket[i];
+    while (curr) {
+      if (!tail) {
+        tail = to->bucket[i];
+        if (tail) {
+          while (tail->next) {
+            tail = tail->next;
+          }
+        }
+      }
+
+      if (!get_key(to, curr->key)) {
+        if (!tail) {
+          to->bucket[i] = curr;
+          to->occupied_buckets++;
+        } else {
+          tail->next = curr;
+        }
+
+        tmp = curr->next;
+        curr->next = NULL;
+        tail = curr;
+
+        to->total_items++;
+        switch (curr->type) {
+        case integer:
+          to->int_items++;
+          break;
+        case Double:
+          to->double_items++;
+          break;
+        case string:
+          to->str_items++;
+          break;
+        }
+        curr = tmp;
+      } else {
+        delete_key(to, curr->key);
+        tail = NULL;
+      }
+    }
+
+    from->bucket[i] = NULL;
+  }
+  kvstore_clear(from);
+  return 0;
 }
 
 void kvstore_stats(Kvstore store) {
@@ -261,11 +328,9 @@ void print_key(Kvstore store, const char *key) {
   }
 }
 
-int delete_key(Kvstore store, const char *key) {
-  if (store == NULL || key == NULL) {
-    return 0;
-  }
-
+bool delete_key(Kvstore store, const char *key) {
+  assert(store);
+  assert(key);
   int pos = hash(key);
 
   node *curr = store->bucket[pos], *prev = NULL;
@@ -278,7 +343,7 @@ int delete_key(Kvstore store, const char *key) {
   }
 
   if (curr == NULL) {
-    return 0;
+    return false;
   }
 
   if (prev != NULL) {
@@ -309,7 +374,7 @@ int delete_key(Kvstore store, const char *key) {
   }
   free(curr);
 
-  return 1;
+  return true;
 }
 
 /*********************************************************************

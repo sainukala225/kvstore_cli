@@ -8,7 +8,7 @@ void kvstore_free(Kvstore store);
 void kvstore_clear(Kvstore store);
 bool put_key(Kvstore store, const char *key, const char *value);
 void print_key(Kvstore store, const char *key);
-int delete_key(Kvstore store, const char *key);
+bool delete_key(Kvstore store, const char *key);
 void kvstore_stats(Kvstore store);
 int save_to_file(Kvstore store, char *filepath);
 int load_from_file(Kvstore store, char *filepath);

@@ -122,7 +122,9 @@ int main(int argc, char *argv[]) {
         errorf("Error: 'delete' takes only one argument. Type 'help' for "
                "usage.\n");
       } else {
-        delete_key(store, arg1);
+        if (!delete_key(store, arg1)) {
+          errorf("Error : key '%s' doesn't exist in store\n", arg1);
+        }
       }
     } else if (!strcmp(cmd, "get")) {
       if (!arg1[0]) {
