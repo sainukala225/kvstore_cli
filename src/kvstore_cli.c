@@ -87,25 +87,25 @@ int main(int argc, char *argv[]) {
     // commands with no arguments
     if (!strcmp(cmd, "exit")) {
       if (arg1[0]) {
-        errorf("Error: 'exit' takes no arguments. Type 'help' for usage.\n");
+        errorf("Error : 'exit' takes no arguments. Type 'help' for usage.\n");
       } else {
         break;
       }
     } else if (!strcmp(cmd, "help")) {
       if (arg1[0]) {
-        errorf("Error: 'help' takes no arguments. Type 'help' for usage.\n");
+        errorf("Error : 'help' takes no arguments. Type 'help' for usage.\n");
       } else {
         print_help_message();
       }
     } else if (!strcmp(cmd, "free")) {
       if (arg1[0]) {
-        errorf("Error: 'free' takes no arguments. Type 'help' for usage.\n");
+        errorf("Error : 'free' takes no arguments. Type 'help' for usage.\n");
       } else {
         kvstore_clear(store);
       }
     } else if (!strcmp(cmd, "stats")) {
       if (arg1[0]) {
-        errorf("Error: 'stats' takes no arguments. Type 'help' for usage.\n");
+        errorf("Error : 'stats' takes no arguments. Type 'help' for usage.\n");
       } else {
         kvstore_stats(store);
       }
@@ -115,9 +115,9 @@ int main(int argc, char *argv[]) {
     else if (!strcmp(cmd, "delete")) {
       if (!arg1[0]) { // key
         errorf(
-            "Error: 'delete' requires key argument. Type 'help' for usage.\n");
+            "Error : 'delete' requires key argument. Type 'help' for usage.\n");
       } else if (arg2[0]) {
-        errorf("Error: 'delete' takes only one argument. Type 'help' for "
+        errorf("Error : 'delete' takes only one argument. Type 'help' for "
                "usage.\n");
       } else {
         if (!delete_key(store, arg1)) {
@@ -126,10 +126,10 @@ int main(int argc, char *argv[]) {
       }
     } else if (!strcmp(cmd, "get")) {
       if (!arg1[0]) {
-        errorf("Error: 'get' requires key argument. Type 'help' for usage.\n");
+        errorf("Error : 'get' requires key argument. Type 'help' for usage.\n");
       } else if (arg2[0]) {
         errorf(
-            "Error: 'get' takes only one argument. Type 'help' for usage.\n");
+            "Error : 'get' takes only one argument. Type 'help' for usage.\n");
       } else {
         print_key(store, arg1);
       }
@@ -137,11 +137,11 @@ int main(int argc, char *argv[]) {
 
     else if (!strcmp(cmd, "save")) {
       if (!arg1[0]) {
-        errorf("Error: 'save' requires filepath argument. Type 'help' for "
+        errorf("Error : 'save' requires filepath argument. Type 'help' for "
                "usage.\n");
       } else if (arg2[0]) {
         errorf(
-            "Error: 'save' takes only one argument. Type 'help' for usage.\n");
+            "Error : 'save' takes only one argument. Type 'help' for usage.\n");
       } else {
         if (!save_to_file(store, arg1)) {
           printf("store saved to file %s successfully\n", arg1);
@@ -151,11 +151,11 @@ int main(int argc, char *argv[]) {
 
     else if (!strcmp(cmd, "load")) {
       if (!arg1[0]) {
-        errorf("Error: 'load' requires filepath argument. Type 'help' for "
+        errorf("Error : 'load' requires filepath argument. Type 'help' for "
                "usage.\n");
       } else if (arg2[0]) {
         errorf(
-            "Error: 'load' takes only one argument. Type 'help' for usage.\n");
+            "Error : 'load' takes only one argument. Type 'help' for usage.\n");
       } else {
         if (!load_from_file(store, arg1)) {
           printf("store loaded from file %s successfully\n", arg1);
@@ -170,13 +170,13 @@ int main(int argc, char *argv[]) {
       char extra_arg[MAX_WORD_SIZE + 1];
       read_word(extra_arg);
       if (!arg1[0]) { // key
-        errorf("Error: 'put' requires key argument. Type 'help' for usage.\n");
+        errorf("Error : 'put' requires key argument. Type 'help' for usage.\n");
       } else if (!arg2[0]) { // value
         errorf(
-            "Error: 'put' requires value argument. Type 'help' for usage.\n");
+            "Error : 'put' requires value argument. Type 'help' for usage.\n");
       } else if (extra_arg[0]) {
         errorf(
-            "Error: 'put' takes only two argument. Type 'help' for usage.\n");
+            "Error : 'put' takes only two argument. Type 'help' for usage.\n");
       } else {
         put_key(store, arg1, arg2);
       }
@@ -184,7 +184,7 @@ int main(int argc, char *argv[]) {
       if (!cmd[0]) {
         continue; // To skip empty lines in test mode
       } else {
-        errorf("Error: Invalid command. Type 'help' for a list of commands.\n");
+        errorf("Error : Invalid command. Type 'help' for a list of commands.\n");
       }
     }
   }
