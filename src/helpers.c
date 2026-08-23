@@ -1,4 +1,5 @@
 #include "helpers.h"
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -126,4 +127,48 @@ read_word_status read_word(char word[]) {
 
   CCHAR_POS_ON_LINE = ccounter_in_line;
   return WORD_OK;
+}
+
+bool handle_read_word_status(read_word_status status, const char *wordtype,
+                             const char *filepath, int line_number) {
+  bool success = false;
+  switch (status) {
+  case WORD_OK:
+    success = true;
+    break;
+  case WORD_TOO_LONG:
+    if (filepath) {
+      errorf("Error in %s on line %d : %s is too long (should be under %d)\n",
+             filepath, line_number, wordtype, MAX_WORD_SIZE);
+
+    } else {
+      errorf("Error : %s is too long (should be under %d)\n", wordtype,
+             MAX_WORD_SIZE);
+    }
+    break;
+  case WORD_INVALID_ESCAPE:
+    if (filepath) {
+      errorf("Error in %s on line %d : Invalid escape in the %s\n", filepath,
+             line_number, wordtype);
+    } else {
+      errorf("Error : Invalid escape in the %s\n", wordtype);
+    }
+    break;
+  case WORD_UNTERMINATED_QUOTE:
+    if (filepath) {
+      errorf("Error in %s on line %d : Unterminated quote in the %s\n",
+             filepath, line_number, wordtype);
+
+    } else {
+      errorf("Error : Unterminated quote in the %s\n", wordtype);
+    }
+    break;
+  }
+  return success;
+}
+
+void conv_str_to_lowcase(char string[]) {
+  for (unsigned int i = 0, len = strlen(string); i < len; i++) {
+    string[i] = tolower((unsigned char)string[i]);
+  }
 }

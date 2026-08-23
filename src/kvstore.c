@@ -381,7 +381,7 @@ bool delete_key(Kvstore store, const char *key) {
  *                      File save/load Functions                      *
  *********************************************************************/
 
-int save_to_file(Kvstore store, char *filepath) {
+int save_to_file(Kvstore store, const char *filepath) {
   char tmpfilepath[MAX_WORD_SIZE + 5];
   snprintf(tmpfilepath, sizeof(tmpfilepath), "%s.tmp", filepath);
   errno = 0;
@@ -479,43 +479,114 @@ fail:
   return 1;
 }
 
-int load_from_file(Kvstore store, char *filepath) {
+int load_from_file(Kvstore store, const char *filepath) {
   CLEANUP(close_file) FILE *fileptr = fopen(filepath, "r");
   if (!fileptr) {
     errorf("Error : Failed to open the file %s\n", filepath);
     return 1;
   }
+
+  Kvstore load_store = kvstore_create();
+
+  if (!load_store) {
+    errorf("Error : Failed to allocate memory to load the store\n");
+    return 1;
+  }
+
   char cmd[MAX_WORD_SIZE + 1];
   char arg1[MAX_WORD_SIZE + 1];
   char arg2[MAX_WORD_SIZE + 1];
+  char extra_arg[MAX_WORD_SIZE + 1];
 
   int line_count = 0;
+  read_line_status line_status;
+  read_word_status word_status;
+
   while (true) {
     line_count++;
-    read_line_status status = read_line(fileptr);
+    line_status = read_line(fileptr);
 
-    switch (status) {
+    switch (line_status) {
     case REACHED_EOF:
-      return 0;
+      int exit_code = kvstore_merge_into(store, load_store);
+      kvstore_free(load_store);
+      return exit_code;
     case READ_LINE_SUCCESS:
       break;
     case READ_LINE_FAILED:
-      errorf("Error : Failed to read the line %d, aborting the load\n",
-             line_count);
-      return 1;
+      errorf("Error in %s on line %d : Failed to read the line, aborting the "
+             "load\n",
+             filepath, line_count);
+      goto load_failed;
     case LINE_LIMIT_EXCEEDED:
-      errorf("Error : The command size on line %d should be under %d\n",
-             line_count, MAX_LINE_SIZE);
-      continue;
+      errorf("Error in %s on line %d : The command size should be under %d\n",
+             filepath, line_count, MAX_LINE_SIZE);
+      goto load_failed;
     }
 
-    // read the command and ignore it
-    read_word(cmd);
-    read_word(arg1); // get the arg1
-    read_word(arg2); // get the arg2
-    put_key(store, arg1, arg2);
+    word_status = read_word(cmd);
+    if (!handle_read_word_status(word_status, "cmd", filepath, line_count)) {
+      goto load_failed;
+    } else {
+
+      if (!cmd[0]) { // line is empty skip it
+        continue;
+      }
+
+      strcpy(arg1, cmd); // temporarily hold the cmd in arg1
+      conv_str_to_lowcase(arg1);
+      if (strcmp(arg1, "put")) {
+        errorf(
+            "Error in %s on line %d : Unexpected command %s aborting the load. "
+            "The file "
+            "should only contain 'put' commands\n",
+            filepath, line_count, cmd);
+        goto load_failed;
+      }
+    }
+
+    word_status = read_word(arg1); // get the arg1
+    if (!handle_read_word_status(word_status, "key", filepath, line_count)) {
+      goto load_failed;
+    } else {
+      if (!arg1[0]) {
+        errorf("Error in %s on line %d : 'put' requires key argument.\n",
+               filepath, line_count);
+        goto load_failed;
+      }
+    }
+
+    word_status = read_word(arg2); // get the arg2
+    if (!handle_read_word_status(word_status, "value", filepath, line_count)) {
+      goto load_failed;
+    } else {
+      if (!arg2[0]) {
+        errorf("Error in %s on line %d : 'put' requires value argument.\n",
+               filepath, line_count);
+        goto load_failed;
+      }
+    }
+
+    word_status = read_word(extra_arg);
+    if (!handle_read_word_status(word_status, "extra argument", filepath,
+                                 line_count)) {
+      goto load_failed;
+    }
+    if (extra_arg[0]) {
+      errorf("Error in %s on line %d : 'put' takes only two argument.\n",
+             filepath, line_count);
+      goto load_failed;
+    }
+
+    if (!put_key(load_store, arg1, arg2)) {
+      errorf("Error in %s on line %d : Failed to save the Item to the store\n",
+             filepath, line_count);
+      goto load_failed;
+    }
   }
-  return 0;
+load_failed:
+  kvstore_free(load_store);
+  return 1;
 }
 /*********************************************************************
  *                      Helper Functions                              *

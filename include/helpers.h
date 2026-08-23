@@ -34,4 +34,7 @@ void close_file(FILE **fp);
 void free_mem(void *ptr);
 read_line_status read_line(FILE *stream);
 read_word_status read_word(char word[]);
+bool handle_read_word_status(read_word_status status, const char *wordtype,
+                             const char *filepath, int line_number);
+void conv_str_to_lowcase(char string[]);
 #endif
