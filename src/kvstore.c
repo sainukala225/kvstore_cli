@@ -200,6 +200,16 @@ bool put_key(Kvstore store, const char *key, const char *value) {
     return false;
   }
 
+  if (key == NULL) {
+    errorf("Error : key can't be null\n");
+    return false;
+  }
+
+  if (value == NULL) {
+    errorf("Error : value can't be null\n");
+    return false;
+  }
+
   node *existing_item = get_key(store, key);
   if (existing_item != NULL) {
 
