@@ -141,11 +141,11 @@ bool handle_read_word_status(read_word_status status, const char *wordtype,
     break;
   case WORD_TOO_LONG:
     if (filepath) {
-      errorf("Error in %s on line %d : %s is too long (should be under %d)\n",
+      errorf("Error in %s on line %d : %s is too long (should be at most %d)\n",
              filepath, line_number, wordtype, MAX_WORD_SIZE);
 
     } else {
-      errorf("Error : %s is too long (should be under %d)\n", wordtype,
+      errorf("Error : %s is too long (should be at most %d)\n", wordtype,
              MAX_WORD_SIZE);
     }
     break;
