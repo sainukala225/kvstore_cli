@@ -2,5 +2,6 @@ build/
 
 tests/**/*.errors
 tests/**/*.results
+tests/roundtrip_tests/state.db
 
 compile_commands.json

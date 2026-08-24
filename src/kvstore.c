@@ -420,13 +420,13 @@ int save_to_file(Kvstore store, const char *filepath) {
       }
       switch (curr->type) {
       case integer:
-        status = fprintf(fileptr, "PUT '%s' '%" PRIdMAX "'\n", key,
+        status = fprintf(fileptr, "PUT '%s' %" PRIdMAX "\n", key,
                          curr->value.int_value);
         break;
       case Double:
         char buf[DOUBLE_BUF_SIZE];
         if (format_double(buf, sizeof buf, curr->value.double_value, true)) {
-          status = fprintf(fileptr, "PUT '%s' '%s'\n", key, buf);
+          status = fprintf(fileptr, "PUT '%s' %s\n", key, buf);
         } else {
           errorf("Error : cannot format value of key %s\n", curr->key);
           status = -1;

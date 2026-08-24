@@ -114,7 +114,10 @@ read_word_status read_word(char word[]) {
   word[ccounter_in_word] = '\0';
 
   char terminator = line[ccounter_in_line];
-  if (ccounter_in_word == MAX_WORD_SIZE && terminator != word_end) {
+  bool word_ended =
+      (terminator == word_end) || (word_end == ' ' && terminator == '\0');
+
+  if (ccounter_in_word == MAX_WORD_SIZE && !word_ended) {
     return WORD_TOO_LONG;
   } else if (ccounter_in_word < MAX_WORD_SIZE &&
              (word_end == 34 || word_end == 39) && terminator != word_end) {

@@ -1,0 +1,18 @@
+stats
+get integer1
+get double_1
+get double_2
+get string
+get 'hell\'0'
+get 'escape\\'
+get hex
+get hex_double
+get a
+get b
+get precise
+get x
+get y
+get big
+get '100 char'
+get s
+get unq100

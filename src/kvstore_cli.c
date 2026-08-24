@@ -144,7 +144,9 @@ int main(int argc, char *argv[]) {
             "Error : 'save' takes only one argument. Type 'help' for usage.\n");
       } else {
         if (!save_to_file(store, arg1)) {
-          printf("store saved to file %s successfully\n", arg1);
+          if (!test_mode) {
+            printf("store saved to file %s successfully\n", arg1);
+          }
         }
       }
     }
@@ -158,7 +160,9 @@ int main(int argc, char *argv[]) {
             "Error : 'load' takes only one argument. Type 'help' for usage.\n");
       } else {
         if (!load_from_file(store, arg1)) {
-          printf("store loaded from file %s successfully\n", arg1);
+          if (!test_mode) {
+            printf("store loaded from file %s successfully\n", arg1);
+          }
         } else {
           errorf("Error : Failed to load the store\n");
         }
@@ -184,7 +188,8 @@ int main(int argc, char *argv[]) {
       if (!cmd[0]) {
         continue; // To skip empty lines in test mode
       } else {
-        errorf("Error : Invalid command. Type 'help' for a list of commands.\n");
+        errorf(
+            "Error : Invalid command. Type 'help' for a list of commands.\n");
       }
     }
   }
