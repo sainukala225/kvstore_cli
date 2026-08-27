@@ -185,7 +185,9 @@ int main(int argc, char *argv[]) {
         errorf(
             "Error : 'put' takes only two argument. Type 'help' for usage.\n");
       } else {
-        put_key(store, arg1, arg2);
+        if (!put_key(store, arg1, arg2)) {
+          errorf("Error : Failed to save the Item to the store\n");
+        }
       }
     } else {
       if (!cmd[0]) {
