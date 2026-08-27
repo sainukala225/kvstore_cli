@@ -3,5 +3,5 @@ build/
 tests/**/*.errors
 tests/**/*.results
 tests/roundtrip_tests/state.db
-
+tests/load_failure_tests/fixtures
 compile_commands.json
