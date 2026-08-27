@@ -535,7 +535,7 @@ int load_from_file(Kvstore store, const char *filepath) {
     }
 
     word_status = read_word(cmd);
-    if (!handle_read_word_status(word_status, "cmd", filepath, line_count)) {
+    if (!handle_read_word_status(word_status, "Command", filepath, line_count)) {
       goto load_failed;
     } else {
 
@@ -556,7 +556,7 @@ int load_from_file(Kvstore store, const char *filepath) {
     }
 
     word_status = read_word(arg1); // get the arg1
-    if (!handle_read_word_status(word_status, "key", filepath, line_count)) {
+    if (!handle_read_word_status(word_status, "Key", filepath, line_count)) {
       goto load_failed;
     } else {
       if (!arg1[0]) {
@@ -567,7 +567,7 @@ int load_from_file(Kvstore store, const char *filepath) {
     }
 
     word_status = read_word(arg2); // get the arg2
-    if (!handle_read_word_status(word_status, "value", filepath, line_count)) {
+    if (!handle_read_word_status(word_status, "Value", filepath, line_count)) {
       goto load_failed;
     } else {
       if (!arg2[0]) {
@@ -578,7 +578,7 @@ int load_from_file(Kvstore store, const char *filepath) {
     }
 
     word_status = read_word(extra_arg);
-    if (!handle_read_word_status(word_status, "extra argument", filepath,
+    if (!handle_read_word_status(word_status, "Extra argument", filepath,
                                  line_count)) {
       goto load_failed;
     }

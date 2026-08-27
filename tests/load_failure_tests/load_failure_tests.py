@@ -10,6 +10,7 @@ BIN = HERE.parent.parent / "build" / "bin" / "kvstore"
 FIX = HERE / "fixtures"
 FIX.mkdir(exist_ok=True)
 CASE = FIX / "case.db"
+CASE_ARG = "fixtures/case.db"
 BANNER = "********************* stats of kvstore ***********************"
 
 failures = []
@@ -30,7 +31,7 @@ def run(session):
 failed_tests = 0
 passed_tests = 0
 
-load_db = f"put a 1\nput b 2\nstats\nload {CASE}\nstats"
+load_db = f"put a 1\nput b 2\nstats\nload {CASE_ARG}\nstats"
 tests = [
     (
         "file_doesnt_exist",
@@ -43,8 +44,8 @@ Error : Failed to load the store
     (
         "reading_directory",
         "",
-        f"put a 1\nput b 2\nstats\nload {HERE}\nstats",
-        f"""Error in {HERE} on line 1 : Failed to read the line, aborting the load
+        f"put a 1\nput b 2\nstats\nload .\nstats",
+        f"""Error in . on line 1 : Failed to read the line, aborting the load
 Error : Failed to load the store
 """,
     ),
@@ -52,7 +53,7 @@ Error : Failed to load the store
         "line_limit_exceeded",
         "a" * 1000,
         load_db,
-        f"""Error in {CASE} on line 3 : The command size should be under 1000
+        f"""Error in {CASE_ARG} on line 3 : The command size should be under 1000
 Error : Failed to load the store
 """,
     ),
@@ -60,7 +61,7 @@ Error : Failed to load the store
         "command_length_exceeded",
         "a" * 101,
         load_db,
-        f"""Error in {CASE} on line 3 : cmd is too long (should be at most 100)
+        f"""Error in {CASE_ARG} on line 3 : Command is too long (should be at most 100)
 Error : Failed to load the store
 """,
     ),
@@ -68,7 +69,7 @@ Error : Failed to load the store
         "unterminated_quote_in_key",
         "put 'the quote in key is unterminated",
         load_db,
-        f"""Error in {CASE} on line 3 : Unterminated quote in the key
+        f"""Error in {CASE_ARG} on line 3 : Unterminated quote in the Key
 Error : Failed to load the store
 """,
     ),
@@ -76,7 +77,7 @@ Error : Failed to load the store
         "unterminated_quote_in_value",
         "put key 'the quote in value is unterminated",
         load_db,
-        f"""Error in {CASE} on line 3 : Unterminated quote in the value
+        f"""Error in {CASE_ARG} on line 3 : Unterminated quote in the Value
 Error : Failed to load the store
 """,
     ),
@@ -84,7 +85,7 @@ Error : Failed to load the store
         "invalid_escape_in_key",
         r"put 'k\ey' value",
         load_db,
-        f"""Error in {CASE} on line 3 : Invalid escape in the key
+        f"""Error in {CASE_ARG} on line 3 : Invalid escape in the Key
 Error : Failed to load the store
 """,
     ),
@@ -92,7 +93,7 @@ Error : Failed to load the store
         "invalid_escape_in_value",
         r"put k 'a\zcd'",
         load_db,
-        f"""Error in {CASE} on line 3 : Invalid escape in the value
+        f"""Error in {CASE_ARG} on line 3 : Invalid escape in the Value
 Error : Failed to load the store
 """,
     ),
@@ -100,7 +101,7 @@ Error : Failed to load the store
         "empty_key",
         "put",
         load_db,
-        f"""Error in {CASE} on line 3 : 'put' requires key argument.
+        f"""Error in {CASE_ARG} on line 3 : 'put' requires key argument.
 Error : Failed to load the store
 """,
     ),
@@ -108,7 +109,7 @@ Error : Failed to load the store
         "empty_value",
         "put key",
         load_db,
-        f"""Error in {CASE} on line 3 : 'put' requires value argument.
+        f"""Error in {CASE_ARG} on line 3 : 'put' requires value argument.
 Error : Failed to load the store
 """,
     ),
@@ -116,7 +117,7 @@ Error : Failed to load the store
         "extra_arg",
         "put key value extra",
         load_db,
-        f"""Error in {CASE} on line 3 : 'put' takes only two argument.
+        f"""Error in {CASE_ARG} on line 3 : 'put' takes only two argument.
 Error : Failed to load the store
 """,
     ),
@@ -124,7 +125,7 @@ Error : Failed to load the store
         "not_put_cmd",
         "get key",
         load_db,
-        f"""Error in {CASE} on line 3 : Unexpected command get aborting the load. The file should only contain 'put' commands
+        f"""Error in {CASE_ARG} on line 3 : Unexpected command get aborting the load. The file should only contain 'put' commands
 Error : Failed to load the store
 """,
     ),
@@ -132,7 +133,7 @@ Error : Failed to load the store
         "extra_long",
         "put key value " + "a" * 101,
         load_db,
-        f"""Error in {CASE} on line 3 : extra argument is too long (should be at most 100)
+        f"""Error in {CASE_ARG} on line 3 : Extra argument is too long (should be at most 100)
 Error : Failed to load the store
 """,
     ),

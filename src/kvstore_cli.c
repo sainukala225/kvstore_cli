@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
     // command with two arguments
     else if (!strcmp(cmd, "put")) {
       char extra_arg[MAX_WORD_SIZE + 1];
-      if (!handle_read_word_status(read_word(extra_arg), "extra argument", NULL,
+      if (!handle_read_word_status(read_word(extra_arg), "Extra argument", NULL,
                                    0)) {
         continue;
       }
