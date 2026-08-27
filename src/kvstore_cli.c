@@ -172,7 +172,10 @@ int main(int argc, char *argv[]) {
     // command with two arguments
     else if (!strcmp(cmd, "put")) {
       char extra_arg[MAX_WORD_SIZE + 1];
-      read_word(extra_arg);
+      if (!handle_read_word_status(read_word(extra_arg), "extra argument", NULL,
+                                   0)) {
+        continue;
+      }
       if (!arg1[0]) { // key
         errorf("Error : 'put' requires key argument. Type 'help' for usage.\n");
       } else if (!arg2[0]) { // value
