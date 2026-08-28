@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 import os
-import subprocess
 import sys
-from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
+from test_helpers import HERE, run, report
+
 os.chdir(HERE)
-BIN = HERE.parent / "build" / "bin" / "kvstore"
 FIX = HERE / "fixtures"
 FIX.mkdir(exist_ok=True)
 CASE = FIX / "case.db"
@@ -14,19 +12,6 @@ CASE_ARG = "fixtures/case.db"
 BANNER = "********************* stats of kvstore ***********************"
 
 failures = []
-
-
-def run(session):
-    return subprocess.run(
-        [BIN, "-T"],
-        check=False,
-        input=session,
-        capture_output=True,
-        text=True,
-        errors="replace",
-        timeout=10,
-    )
-
 
 failed_tests = 0
 passed_tests = 0
@@ -44,8 +29,8 @@ Error : Failed to load the store
     (
         "reading_directory",
         "",
-        f"put a 1\nput b 2\nstats\nload .\nstats",
-        f"""Error in . on line 1 : Failed to read the line, aborting the load
+        "put a 1\nput b 2\nstats\nload .\nstats",
+        """Error in . on line 1 : Failed to read the line, aborting the load
 Error : Failed to load the store
 """,
     ),
@@ -166,16 +151,7 @@ for test_name, file_content, test_case, error in tests:
     else:
         failed_tests += 1
 
-for test_name, stream, expected, actual in failures:
-    print(
-        f"""Error in Test {test_name} {stream} :
-        Expected : {expected!r}
-        got : {actual!r}""",
-        file=sys.stderr,
-    )
-print(f"load_failure_tests.py : {passed_tests}/{total_tests} passed")
-if failed_tests != 0:
-    print(f"load_failure_tests.py : {failed_tests}/{total_tests} failed")
-    sys.exit(1)
-
-sys.exit(0)
+exit_code = report(
+    "load_failure_tests.py", passed_tests, failed_tests, total_tests, failures
+)
+sys.exit(exit_code)

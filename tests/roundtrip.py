@@ -2,26 +2,12 @@
 
 import difflib
 import os
-import subprocess
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
+from test_helpers import HERE, run
+
 os.chdir(HERE)
-BIN = HERE.parent / "build" / "bin" / "kvstore"
-
-
-def run(session):
-    return subprocess.run(
-        [BIN, "-T"],
-        check=False,
-        input=session,
-        capture_output=True,
-        text=True,
-        errors="replace",
-        timeout=10,
-    )
-
 
 gets_opr = r"""
 stats

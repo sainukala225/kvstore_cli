@@ -2,4 +2,5 @@ build/
 
 tests/state.db
 tests/fixtures/
+__pycache__/
 compile_commands.json
