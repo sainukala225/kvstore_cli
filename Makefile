@@ -41,7 +41,7 @@ $(TEST_TARGET) : tests/state_tests/state.c $(LIB_OBJS)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -o $@ tests/state_tests/state.c $(LIB_OBJS)
 
-test : $(TARGET)
+test : $(TARGET) $(TEST_TARGET)
 	./tests/run.sh
 
 valgrind : $(PLAIN_TARGET)
