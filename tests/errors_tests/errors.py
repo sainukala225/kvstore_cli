@@ -103,6 +103,26 @@ tests = [
         "puut key value\n",
         "Error : Invalid command. Type 'help' for a list of commands.\n",
     ),
+    (
+        "get key not in store",
+        "get key_not_in_store\n",
+        "Error : Item doesn't exist\n",
+    ),
+    (
+        "delete key not in store",
+        "delete key_not_in_store\n",
+        "Error : key 'key_not_in_store' doesn't exist in store\n",
+    ),
+    (
+        "get deleted key",
+        "put bx 2\ndelete bx\nget bx\n",
+        "Error : Item doesn't exist\n",
+    ),
+    (
+        "get key after free",
+        "put a 1\nfree\nget a\n",
+        "Error : Item doesn't exist\n",
+    ),
 ]
 
 failed_tests = 0
