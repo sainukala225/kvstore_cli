@@ -8,7 +8,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 os.chdir(HERE)
-BIN = HERE.parent.parent / "build" / "bin" / "kvstore"
+BIN = HERE.parent / "build" / "bin" / "kvstore"
 
 
 def run(session):

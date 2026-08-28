@@ -6,7 +6,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 os.chdir(HERE)
-BIN = HERE.parent.parent / "build" / "bin" / "kvstore"
+BIN = HERE.parent / "build" / "bin" / "kvstore"
 FIX = HERE / "fixtures"
 FIX.mkdir(exist_ok=True)
 CASE = FIX / "case.db"

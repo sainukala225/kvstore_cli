@@ -37,9 +37,9 @@ build/obj-plain/%.o : src/%.c
 run : $(TARGET)
 	./$(TARGET)
 
-$(TEST_TARGET) : tests/state_tests/state.c $(LIB_OBJS)
+$(TEST_TARGET) : tests/state.c $(LIB_OBJS)
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -o $@ tests/state_tests/state.c $(LIB_OBJS)
+	$(CC) $(CFLAGS) -o $@ tests/state.c $(LIB_OBJS)
 
 test : $(TARGET) $(TEST_TARGET)
 	./tests/run.sh
