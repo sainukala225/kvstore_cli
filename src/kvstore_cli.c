@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
       kvstore_free(store);
       exit(EXIT_FAILURE);
     case LINE_LIMIT_EXCEEDED:
-      errorf("Error : The command size should be under %d.\n", MAX_LINE_SIZE);
+      errorf("Error : The command size should be under %d\n", MAX_LINE_SIZE);
       continue;
     }
 
