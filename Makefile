@@ -12,6 +12,9 @@ OBJS := $(patsubst src/%.c,build/obj/%.o,$(SRCS))
 PLAIN_TARGET = build/bin/kvstore-plain
 PLAIN_OBJS := $(patsubst src/%.c,build/obj-plain/%.o,$(SRCS))
 
+TEST_TARGET = build/bin/state_test
+LIB_OBJS := $(filter-out build/obj/kvstore_cli.o,$(OBJS))
+
 all : $(TARGET)
 	echo "build finished"
 
@@ -33,6 +36,10 @@ build/obj-plain/%.o : src/%.c
 
 run : $(TARGET)
 	./$(TARGET)
+
+$(TEST_TARGET) : tests/state_tests/state.c $(LIB_OBJS)
+	mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -o $@ tests/state_tests/state.c $(LIB_OBJS)
 
 test : $(TARGET)
 	./tests/run.sh

@@ -65,6 +65,9 @@ Kvstore kvstore_create() {
 }
 
 void kvstore_free(Kvstore store) {
+  if (!store) {
+    return;
+  }
   for (int i = 0; i < BUCKET_SIZE; i++) {
     node *curr = store->bucket[i], *next;
     while (curr) {
@@ -169,23 +172,31 @@ static int kvstore_merge_into(Kvstore to, Kvstore from) {
   return 0;
 }
 
+Kvstore_stats kvstore_get_stats(Kvstore store) {
+  Kvstore_stats stats = {BUCKET_SIZE,         store->occupied_buckets,
+                         store->total_items,  store->int_items,
+                         store->double_items, store->str_items};
+  return stats;
+}
+
 void kvstore_stats(Kvstore store) {
+  Kvstore_stats stats = kvstore_get_stats(store);
   double load_factor = (double)store->total_items / BUCKET_SIZE;
   printf("********************* stats of kvstore ***********************\n");
   printf("* The bucket size (capacity)     : %3d                       *\n",
-         BUCKET_SIZE);
+         stats.bucket_size);
   printf("* The number of occupied_buckets : %3d                       *\n",
-         store->occupied_buckets);
+         stats.occupied_buckets);
   printf("* The total items in the store   : %3d                       *\n",
-         store->total_items);
+         stats.total_items);
   printf("* The load factor                : %.2f                      *\n",
          load_factor);
   printf("* The number of int items        : %3d                       *\n",
-         store->int_items);
+         stats.int_items);
   printf("* The number of double items     : %3d                       *\n",
-         store->double_items);
+         stats.double_items);
   printf("* The number of string items     : %3d                       *\n",
-         store->str_items);
+         stats.str_items);
   printf("**************************************************************\n");
 }
 
@@ -535,7 +546,8 @@ int load_from_file(Kvstore store, const char *filepath) {
     }
 
     word_status = read_word(cmd);
-    if (!handle_read_word_status(word_status, "Command", filepath, line_count)) {
+    if (!handle_read_word_status(word_status, "Command", filepath,
+                                 line_count)) {
       goto load_failed;
     } else {
 
