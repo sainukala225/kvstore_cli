@@ -2,7 +2,7 @@
 
 An interactive key/value store in C, with typed values and crash-safe persistence.
 
-![tests](https://github.com/sainukala225/kvstore_cli/actions/workflows/ci.yml/badge.svg)
+[![tests](https://github.com/sainukala225/kvstore_cli/actions/workflows/ci.yml/badge.svg)](https://github.com/sainukala225/kvstore_cli/actions/workflows/ci.yml)
 
 ## Introduction
 
