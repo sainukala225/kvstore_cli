@@ -1,8 +1,10 @@
 #include "kvstore.h"
 #include "helpers.h"
 #include <assert.h>
+#include <dirent.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <libgen.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -488,6 +490,36 @@ int save_to_file(Kvstore store, const char *filepath) {
            strerror(errno));
     goto fail;
   }
+
+  char *dirc = strdup(filepath);
+  if (!dirc) {
+    errorf("Error : Saved %s but could not allocate memory to sync its "
+           "directory\n",
+           filepath);
+    return 2;
+  }
+  char *dname = dirname(dirc);
+
+  errno = 0;
+  DIR *dirptr = opendir(dname);
+  if (!dirptr) {
+    errorf("Error : Saved %s but could not open its directory %s : %s\n",
+           filepath, dname, strerror(errno));
+    goto dir_fail;
+  }
+
+  /* A directory fd on a filesystem with no fsync implementation reports
+     EINVAL, which means the operation is unavailable rather than failed. The
+     save stands in that case. Any other errno is a real I/O problem. */
+  errno = 0;
+  if (fsync(dirfd(dirptr)) < 0 && errno != EINVAL) {
+    errorf("Error : Saved %s but could not sync its directory %s : %s\n",
+           filepath, dname, strerror(errno));
+    goto dir_close;
+  }
+
+  free(dirc);
+  closedir(dirptr);
   return 0;
 
 fail_close:
@@ -498,6 +530,13 @@ fail:
     errorf("Error : Failed to delete the file %s\n", tmpfilepath);
   }
   return 1;
+
+dir_close:
+  closedir(dirptr);
+dir_fail:
+  free(dirc);
+
+  return 2;
 }
 
 int load_from_file(Kvstore store, const char *filepath) {

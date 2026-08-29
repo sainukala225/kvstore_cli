@@ -1,7 +1,7 @@
 .SILENT :
 
 CC = gcc
-BASEFLAGS = -Wall -Wextra -pthread -std=gnu23 -g -Iinclude/
+BASEFLAGS = -Wall -Wextra -pthread -std=gnu2x -g -Iinclude/
 SANFLAGS = -fsanitize=address,undefined
 CFLAGS = $(BASEFLAGS) $(SANFLAGS)
 
