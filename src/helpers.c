@@ -78,14 +78,14 @@ read_word_status read_word(char word[]) {
   int ccounter_in_word = 0;
   // test the last read char
   switch (ch) {
-  case 34: // char "
-    word_end = 34;
+  case '"':
+    word_end = '"';
     break;
-  case 39: // char '
-    word_end = 39;
+  case '\'':
+    word_end = '\'';
     break;
   default:
-    word_end = 32; // space
+    word_end = ' ';
     word[ccounter_in_word] = ch;
     ccounter_in_word++;
   }
@@ -120,7 +120,7 @@ read_word_status read_word(char word[]) {
   if (ccounter_in_word == MAX_WORD_SIZE && !word_ended) {
     return WORD_TOO_LONG;
   } else if (ccounter_in_word < MAX_WORD_SIZE &&
-             (word_end == 34 || word_end == 39) && terminator != word_end) {
+             (word_end == '"' || word_end == '\'') && terminator != word_end) {
     return WORD_UNTERMINATED_QUOTE;
   }
   // consume the delimiter

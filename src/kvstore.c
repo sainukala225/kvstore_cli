@@ -52,8 +52,8 @@ typedef struct kvstore_t {
 
 static int hash(const char *key);
 static int kvstore_merge_into(Kvstore to, Kvstore from);
-static void *set_key_value(node *item, const char *value);
-static void *get_key(Kvstore store, const char *key);
+static node *set_key_value(node *item, const char *value);
+static node *get_key(Kvstore store, const char *key);
 static const char *format_double(char *buf, size_t size, double d, bool exact);
 [[gnu::malloc, gnu::malloc(free, 1)]]
 static char *transform_word_for_file_write(const char *word, char delimiter);
@@ -163,6 +163,10 @@ static int kvstore_merge_into(Kvstore to, Kvstore from) {
         }
         curr = tmp;
       } else {
+        /* Key is already in `to` and the file wins, so delete it and do NOT
+           advance curr: the next iteration finds the key absent and moves
+           this node in. tail is reset because delete_key may have freed the
+           node it pointed at. */
         delete_key(to, curr->key);
         tail = NULL;
       }
@@ -307,7 +311,7 @@ bool put_key(Kvstore store, const char *key, const char *value) {
   return true;
 }
 
-static void *get_key(Kvstore store, const char *key) {
+static node *get_key(Kvstore store, const char *key) {
   if (store == NULL || key == NULL) {
     return NULL;
   }
@@ -426,7 +430,7 @@ int save_to_file(Kvstore store, const char *filepath) {
     node *curr = store->bucket[i];
     while (curr != NULL) {
       CLEANUP(free_mem)
-      char *key = transform_word_for_file_write(curr->key, 39);
+      char *key = transform_word_for_file_write(curr->key, '\'');
       if (!key) {
         errorf("Error : Failed to format key for file write\n");
         goto fail_close;
@@ -448,7 +452,7 @@ int save_to_file(Kvstore store, const char *filepath) {
       case string:
         CLEANUP(free_mem)
         char *str_value =
-            transform_word_for_file_write(curr->value.str_value, 39);
+            transform_word_for_file_write(curr->value.str_value, '\'');
         if (!str_value) {
           errorf("Error : Failed to format string value for file write\n");
           goto fail_close;
@@ -653,7 +657,7 @@ load_failed:
  *                      Helper Functions                              *
  *********************************************************************/
 
-static void *set_key_value(node *item, const char *value) {
+static node *set_key_value(node *item, const char *value) {
 
   char *oldstrvalue = item->type == string ? item->value.str_value : NULL;
 
